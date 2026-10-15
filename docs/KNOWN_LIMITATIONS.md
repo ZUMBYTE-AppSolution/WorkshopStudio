@@ -2,7 +2,7 @@
 
 ## Stand der Prüfung für 1.2.0
 
-131/131 C#-Selbsttests und ein lokaler WPF-Renderingtest bestanden. Die Dashboard-Spiele sind als Liste mit proportional skaliertem Bild links und Informationen rechts sichtbar. Der Updater wurde mit gültigen und manipulierten Release-Metadaten, SHA-256-Zuordnung und sicheren ZIP-Pfaden offline getestet. Ein End-to-End-Update von einer älteren installierten Version auf ein neueres öffentliches Release kann erst nach einem nachfolgenden Release geprüft werden. Das Tool-Paket ist portabel und nicht signiert; für geschützte Installationsordner sind Schreibrechte nötig. Der Nutzerordner für echte lokale Mods und ein echter Steam-Upload bleiben offen.
+131/131 C#-Selbsttests und ein lokaler WPF-Renderingtest bestanden. Die Dashboard-Spiele sind als kompakte Listeneinträge mit proportional skaliertem Bild links und Informationen rechts sichtbar; bei ausreichender Breite stehen zwei nebeneinander. Im maximierten Fenster wurden alle drei eigenen Fensterknöpfe innerhalb des nutzbaren Monitorbereichs geprüft. Der Updater wurde mit gültigen und manipulierten Release-Metadaten, SHA-256-Zuordnung und sicheren ZIP-Pfaden offline getestet. Ein End-to-End-Update von einer älteren installierten Version auf ein neueres öffentliches Release kann erst nach einem nachfolgenden Release geprüft werden. Das Tool-Paket ist portabel und nicht signiert; für geschützte Installationsordner sind Schreibrechte nötig. Der Nutzerordner für echte lokale Mods und ein echter Steam-Upload bleiben offen.
 
 ## Stand der Prüfung für 1.1.1
 
