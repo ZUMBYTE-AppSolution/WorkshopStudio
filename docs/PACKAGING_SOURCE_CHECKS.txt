@@ -1,0 +1,23 @@
+PASS: Safe default is SingleMod with persisted explicit selection
+PASS: Zomboid AppID is recognized even when Generic was selected
+PASS: Mandatory scope validation precedes creation of the staging directory
+PASS: Game and Steam markers are rejected and guard is repeated during traversal
+PASS: Multiple candidates do not silently become one upload
+PASS: Selection rejects duplicate folder names and path traversal
+PASS: B42 version sources include the mod root and preserve common
+PASS: Numeric mod name directly under mods does not expand to siblings
+PASS: Copy loop uses resolved mounts, not the entire unfiltered ContentFolder
+PASS: Required metadata is checked against actual staged files after filtering
+PASS: Byte limit is enforced during copy, not after whole-file allocation
+PASS: Empty directories are retained and form part of deterministic identity
+PASS: Display formatting is not serialized into the content fingerprint
+PASS: Template produces a direct mod root without a Contents wrapper
+PASS: Editor exposes single selection, explicit bundle selection, and source mapping
+PASS: Preview shows all files and source mapping without invoking upload
+PASS: File watchers subscribe to resolved source mounts
+PASS: Dashboard uses live bindings for games, publications, and activities
+PASS: 35 packaging regression cases are registered for local C# execution
+PASS: Setup docs no longer require a manually prepared Contents folder
+
+20/20 offline source-contract checks passed.
+C# was not compiled or executed. No WPF rendering or Steam upload is verified by this script.

@@ -1,0 +1,7 @@
+{
+  "version": "1.1.1",
+  "downloadUrl": "https://example.invalid/releases/WorkshopStudio-1.1.1-win-x64.zip",
+  "notes": "Beispiel: Dies ist keine erreichbare Updatequelle. Eigene HTTPS-Adresse und echte Release-Prüfsumme einsetzen.",
+  "sha256": "HIER_DEN_ECHTEN_SHA256_HASH_DER_RELEASE_ZIP_EINTRAGEN",
+  "channel": "stable"
+}

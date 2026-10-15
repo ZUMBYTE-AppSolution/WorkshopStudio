@@ -1,0 +1,49 @@
+<Window xmlns:icons="clr-namespace:WorkshopStudio.Desktop.Services" Style="{StaticResource StudioWindow}" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="WorkshopStudio.Desktop.Views.AppEditorWindow" Title="App-Profil" Width="830" Height="730" MinWidth="600" MinHeight="500" WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
+  <Grid Margin="26">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
+    <StackPanel Margin="0,0,0,20">
+      <TextBlock Text="App-Profil" FontSize="25" FontWeight="SemiBold"/>
+      <TextBlock Text="WORKSHOP STUDIO" Foreground="{DynamicResource AccentBrush}" FontSize="10" Margin="0,7,0,0"/>
+    </StackPanel>
+    <Grid Grid.Row="1">
+      <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="0,0,10,0">
+          <StackPanel Margin="0,0,0,16">
+            <TextBlock Text="Steam-AppID" Style="{StaticResource FieldLabel}"/>
+            <TextBox Text="{Binding AppId,UpdateSourceTrigger=PropertyChanged,ValidatesOnExceptions=True}"/>
+          </StackPanel>
+          <StackPanel Margin="0,0,0,16">
+            <TextBlock Text="Anzeigename" Style="{StaticResource FieldLabel}"/>
+            <TextBox Text="{Binding Name,UpdateSourceTrigger=PropertyChanged,ValidatesOnExceptions=True}"/>
+          </StackPanel>
+          <TextBlock Text="Spielvorlage" Style="{StaticResource FieldLabel}"/>
+          <ComboBox x:Name="TemplateBox" SelectedItem="{Binding Template}" Margin="0,0,0,16"/>
+          <StackPanel Margin="0,0,0,16">
+            <TextBlock Text="Standard-Quellverzeichnis (optional)" Style="{StaticResource FieldLabel}"/>
+            <TextBox x:Name="SourceRootBox" Text="{Binding SourceRoot,UpdateSourceTrigger=PropertyChanged,ValidatesOnExceptions=True}"/>
+          </StackPanel>
+          <Button Content="Quellverzeichnis auswählen" Click="Browse_Click" HorizontalAlignment="Left" Margin="0,0,0,16" icons:Iconify.Icon="{StaticResource IconFolder}"/>
+          <TextBlock Text="Standard-Sichtbarkeit neuer Mods" Style="{StaticResource FieldLabel}"/>
+          <ComboBox x:Name="VisibilityBox" SelectedIndex="{Binding DefaultVisibility}" Margin="0,0,0,16"/>
+          <StackPanel Margin="0,0,0,16">
+            <TextBlock Text="App-weite Dateiausschlüsse" Style="{StaticResource FieldLabel}"/>
+            <TextBox Text="{Binding DefaultExclusions,UpdateSourceTrigger=PropertyChanged,ValidatesOnExceptions=True}" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" Height="120"/>
+          </StackPanel>
+          <StackPanel Margin="0,0,0,16">
+            <TextBlock Text="Notizen zum Spiel / Uploader" Style="{StaticResource FieldLabel}"/>
+            <TextBox Text="{Binding Notes,UpdateSourceTrigger=PropertyChanged,ValidatesOnExceptions=True}" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" Height="120"/>
+          </StackPanel>
+          <TextBlock Text="Ein Profil kann auch ohne öffentliche Store-Metadaten angelegt werden. SteamCMD-Unterstützung und benötigtes Inhaltsformat sind vom Spiel abhängig." Style="{StaticResource Muted}" Margin="0,0,0,16"/>
+        </StackPanel>
+      </ScrollViewer>
+    </Grid>
+    <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+      <Button Content="Abbrechen" IsCancel="True" Margin="0,0,10,0" icons:Iconify.Icon="{StaticResource IconStop}"/>
+      <Button Content="Speichern" Style="{StaticResource PrimaryButton}" Click="Save_Click" IsDefault="True" icons:Iconify.Icon="{StaticResource IconSave}"/>
+    </StackPanel>
+  </Grid>
+</Window>

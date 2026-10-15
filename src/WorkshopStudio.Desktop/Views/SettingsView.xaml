@@ -1,0 +1,239 @@
+<UserControl xmlns:icons="clr-namespace:WorkshopStudio.Desktop.Services" Style="{StaticResource StudioView}" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="WorkshopStudio.Desktop.Views.SettingsView">
+  <DockPanel>
+    <WrapPanel DockPanel.Dock="Bottom" Margin="0,16,0,0">
+      <Button Content="Einstellungen speichern" Command="{Binding ActionCommand}" CommandParameter="save-settings" Margin="0,0,8,8" Style="{StaticResource PrimaryButton}" icons:Iconify.Icon="{StaticResource IconSave}"/>
+    </WrapPanel>
+    <TabControl IsEnabled="{Binding CanEdit}" ToolTip="Änderungen werden erst mit Einstellungen speichern übernommen.">
+      <TabItem Header="Allgemein">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+          <StackPanel Margin="0,0,10,0">
+            <Border Style="{StaticResource Card}" Margin="0,0,0,16">
+              <StackPanel>
+                <TextBlock Text="Oberfläche" Style="{StaticResource SectionTitle}"/>
+                <StackPanel Margin="0,0,0,17">
+                  <TextBlock Text="Theme" Style="{StaticResource FieldLabel}"/>
+                  <ComboBox ItemsSource="{Binding Themes}" SelectedItem="{Binding SettingsDraft.Theme}"/>
+                </StackPanel>
+                <StackPanel Margin="0,0,0,17">
+                  <TextBlock Text="Akzentfarbe (#RRGGBB)" Style="{StaticResource FieldLabel}"/>
+                  <TextBox Text="{Binding SettingsDraft.Accent,UpdateSourceTrigger=PropertyChanged,ValidatesOnExceptions=True}"/>
+                </StackPanel>
+                <StackPanel Margin="0,0,0,17">
+                  <TextBlock Text="UI-Skalierung (0,8–1,5; Zahl im Windows-Format)" Style="{StaticResource FieldLabel}"/>
+                  <TextBox Text="{Binding SettingsDraft.UiScale,UpdateSourceTrigger=PropertyChanged,ValidatesOnExceptions=True}"/>
+                </StackPanel>
+                <CheckBox IsChecked="{Binding SettingsDraft.StartMaximized}">
+                  <TextBlock Text="Maximiert starten"/>
+                </CheckBox>
+              </StackPanel>
+            </Border>
+            <Border Style="{StaticResource Card}" Margin="0,0,0,16">
+              <StackPanel>
+                <TextBlock Text="Anmeldung" Style="{StaticResource SectionTitle}"/>
+                <CheckBox IsChecked="{Binding SettingsDraft.AutoLogin}">
+                  <TextBlock Text="SteamCMD-Sitzung beim Start prüfen (Auto-Login)"/>
+                </CheckBox>
+                <CheckBox IsChecked="{Binding SettingsDraft.RememberWebSession}">
+                  <TextBlock Text="Steam-Websitzung merken"/>
+                </CheckBox>
+                <TextBlock Text="Optional gespeicherte Passwörter liegen im Windows-Anmeldedatenspeicher. Windows-Benutzer mit Zugriff auf dein Konto können grundsätzlich auch auf dessen gespeicherte Geheimnisse zugreifen." Style="{StaticResource Muted}" Margin="0,7,0,16"/>
+              </StackPanel>
+            </Border>
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+      <TabItem Header="SteamCMD">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+          <StackPanel Margin="0,0,10,0">
+            <Border Style="{StaticResource Card}" Margin="0,0,0,16">
+              <StackPanel>
+                <TextBlock Text="Installation" Style="{StaticResource SectionTitle}"/>
+                <StackPanel Margin="0,0,0,17">
+                  <TextBlock Text="Pfad zur steamcmd.exe" Style="{StaticResource FieldLabel}"/>
+                  <TextBox Text="{Binding SettingsDraft.SteamCmdPath,UpdateSourceTrigger=PropertyChanged,ValidatesOnExceptions=True}"/>
+                </StackPanel>
+                <WrapPanel Margin="0,0,0,12">
+                  <Button Content="SteamCMD installieren" Command="{Binding ActionCommand}" CommandParameter="install-steamcmd" Margin="0,0,8,8" Style="{StaticResource PrimaryButton}" icons:Iconify.Icon="{StaticResource IconDownload}"/>
+                  <Button Content="Vorhandene EXE auswählen" Command="{Binding ActionCommand}" CommandParameter="choose-steamcmd" Margin="0,0,8,8" icons:Iconify.Icon="{StaticResource IconFolder}"/>
+                </WrapPanel>
+                <StackPanel Margin="0,0,0,17">
+                  <TextBlock Text="Upload-Zeitlimit (Minuten, 1–1440)" Style="{StaticResource FieldLabel}"/>
+                  <TextBox Text="{Binding SettingsDraft.UploadTimeoutMinutes,UpdateSourceTrigger=PropertyChanged,ValidatesOnExceptions=True}"/>
+                </StackPanel>
+                <StackPanel Margin="0,0,0,17">
+                  <TextBlock Text="Anmelde-Zeitlimit (Minuten, 1–60)" Style="{StaticResource FieldLabel}"/>
+                  <TextBox Text="{Binding SettingsDraft.AuthenticationTimeoutMinutes,UpdateSourceTrigger=PropertyChanged,ValidatesOnExceptions=True}"/>
+                </StackPanel>
+                <TextBlock Text="SteamCMD aktualisiert sich selbst. Eine externe SteamCMD-Konsole darf nicht gleichzeitig dieselbe Installation verwenden. Steam Guard wird nicht umgangen." Style="{StaticResource Muted}" Margin="0,7,0,16"/>
+              </StackPanel>
+            </Border>
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+      <TabItem Header="Publishing">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+          <StackPanel Margin="0,0,10,0">
+            <Border Style="{StaticResource Card}" Margin="0,0,0,16">
+              <StackPanel>
+                <TextBlock Text="Release-Verhalten" Style="{StaticResource SectionTitle}"/>
+                <StackPanel Margin="0,0,0,17">
+                  <TextBlock Text="Standard-Zielkanal" Style="{StaticResource FieldLabel}"/>
+                  <ComboBox ItemsSource="{Binding Channels}" SelectedItem="{Binding SettingsDraft.DefaultChannel}"/>
+                </StackPanel>
+                <CheckBox IsChecked="{Binding SettingsDraft.OnlyChanged}">
+                  <TextBlock Text="Unveränderte Pakete überspringen"/>
+                </CheckBox>
+                <CheckBox IsChecked="{Binding SettingsDraft.StopQueueOnError}">
+                  <TextBlock Text="Warteschlange bei einem Fehler stoppen"/>
+                </CheckBox>
+                <CheckBox IsChecked="{Binding SettingsDraft.OpenWorkshopAfterPublish}">
+                  <TextBlock Text="Steam-Seite nach manuellem Upload öffnen"/>
+                </CheckBox>
+                <CheckBox IsChecked="{Binding SettingsDraft.ValidateZomboidLayout}">
+                  <TextBlock Text="Alle mod.info-Dateien auf vorhandene IDs prüfen"/>
+                </CheckBox>
+                <TextBlock Text="Einzelmod-Auswahl und Spielordner-Sperre sind immer aktiv, unabhängig von dieser Option." Style="{StaticResource Muted}" FontSize="11" Margin="0,0,0,12"/>
+                <StackPanel Margin="0,0,0,17">
+                  <TextBlock Text="Maximale Paketgröße in MiB" Style="{StaticResource FieldLabel}"/>
+                  <TextBox Text="{Binding SettingsDraft.MaxPackageMiB,UpdateSourceTrigger=PropertyChanged,ValidatesOnExceptions=True}"/>
+                </StackPanel>
+                <StackPanel Margin="0,0,0,17">
+                  <TextBlock Text="Maximale Dateianzahl" Style="{StaticResource FieldLabel}"/>
+                  <TextBox Text="{Binding SettingsDraft.MaxFileCount,UpdateSourceTrigger=PropertyChanged,ValidatesOnExceptions=True}"/>
+                </StackPanel>
+                <TextBlock Text="Der Kanal bestimmt die Workshop-ID. Test verwendet immer private Sichtbarkeit. Tags, Abhängigkeiten und spielabhängige Spezialmetadaten werden im originalen Steam-Editor gepflegt." Style="{StaticResource Muted}" Margin="0,7,0,16"/>
+              </StackPanel>
+            </Border>
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+      <TabItem Header="Dateien">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+          <StackPanel Margin="0,0,10,0">
+            <Border Style="{StaticResource Card}" Margin="0,0,0,16">
+              <StackPanel>
+                <TextBlock Text="Dateifilter" Style="{StaticResource SectionTitle}"/>
+                <StackPanel Margin="0,0,0,17">
+                  <TextBlock Text="Globale Ausschlüsse, eine Regel pro Zeile" Style="{StaticResource FieldLabel}"/>
+                  <TextBox Text="{Binding SettingsDraft.GlobalExclusions,UpdateSourceTrigger=PropertyChanged,ValidatesOnExceptions=True}" Height="112" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"/>
+                </StackPanel>
+                <CheckBox IsChecked="{Binding SettingsDraft.ExcludePotentialSecrets}">
+                  <TextBlock Text="Typische Geheimnisse ausschließen (.env, .ssh, Schlüssel, Zertifikate)"/>
+                </CheckBox>
+                <TextBlock Text="Zusätzlich gelten App- und Mod-Ausschlüsse. Unterstützt: *.tmp, Ordner/, Unterordner/*.log, **/*.tmp. Keine vollständige gitignore-Syntax. Junctions und symbolische Links werden aus Sicherheitsgründen abgelehnt. Ein Dateifilter ersetzt keine Geheimnisprüfung." Style="{StaticResource Muted}" Margin="0,7,0,16"/>
+              </StackPanel>
+            </Border>
+            <Border Style="{StaticResource Card}" Margin="0,0,0,16">
+              <StackPanel>
+                <TextBlock Text="Pakete &amp; Backups" Style="{StaticResource SectionTitle}"/>
+                <CheckBox IsChecked="{Binding SettingsDraft.CreatePackageBackups}">
+                  <TextBlock Text="Nach erfolgreichem Upload Paket-Backup erstellen"/>
+                </CheckBox>
+                <CheckBox IsChecked="{Binding SettingsDraft.KeepSuccessfulStaging}">
+                  <TextBlock Text="Erfolgreiche Paketordner behalten"/>
+                </CheckBox>
+                <StackPanel Margin="0,0,0,17">
+                  <TextBlock Text="Paket-Backups pro Mod und Kanal behalten" Style="{StaticResource FieldLabel}"/>
+                  <TextBox Text="{Binding SettingsDraft.BackupRetention,UpdateSourceTrigger=PropertyChanged,ValidatesOnExceptions=True}"/>
+                </StackPanel>
+                <StackPanel Margin="0,0,0,17">
+                  <TextBlock Text="Verlaufseinträge behalten" Style="{StaticResource FieldLabel}"/>
+                  <TextBox Text="{Binding SettingsDraft.HistoryRetention,UpdateSourceTrigger=PropertyChanged,ValidatesOnExceptions=True}"/>
+                </StackPanel>
+                <WrapPanel Margin="0,0,0,12">
+                  <Button Content="Backups öffnen" Command="{Binding ActionCommand}" CommandParameter="open-backups" Margin="0,0,8,8" icons:Iconify.Icon="{StaticResource IconFolder}"/>
+                  <Button Content="Paketablage bereinigen" Command="{Binding ActionCommand}" CommandParameter="clear-staging" Margin="0,0,8,8" icons:Iconify.Icon="{StaticResource IconDelete}"/>
+                </WrapPanel>
+                <TextBlock Text="Paket-Backups enthalten deinen veröffentlichten Quellinhalt. Sie sind nicht verschlüsselt. Protokolldateien werden bei Verlaufskürzung nicht automatisch gelöscht." Style="{StaticResource Muted}" Margin="0,7,0,16"/>
+              </StackPanel>
+            </Border>
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+      <TabItem Header="Steam-Daten">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+          <StackPanel Margin="0,0,10,0">
+            <Border Style="{StaticResource Card}" Margin="0,0,0,16">
+              <StackPanel>
+                <TextBlock Text="Metadaten &amp; Bilder" Style="{StaticResource SectionTitle}"/>
+                <CheckBox IsChecked="{Binding SettingsDraft.RefreshMetadataOnStartup}">
+                  <TextBlock Text="Steam-Metadaten beim Start aktualisieren"/>
+                </CheckBox>
+                <StackPanel Margin="0,0,0,17">
+                  <TextBlock Text="Store-Sprache (z. B. german oder english)" Style="{StaticResource FieldLabel}"/>
+                  <TextBox Text="{Binding SettingsDraft.StoreLanguage,UpdateSourceTrigger=PropertyChanged,ValidatesOnExceptions=True}"/>
+                </StackPanel>
+                <StackPanel Margin="0,0,0,17">
+                  <TextBlock Text="Store-Ländercode (z. B. DE)" Style="{StaticResource FieldLabel}"/>
+                  <TextBox Text="{Binding SettingsDraft.StoreCountry,UpdateSourceTrigger=PropertyChanged,ValidatesOnExceptions=True}"/>
+                </StackPanel>
+                <StackPanel Margin="0,0,0,17">
+                  <TextBlock Text="HTTP-Zeitlimit (Sekunden, 5–300)" Style="{StaticResource FieldLabel}"/>
+                  <TextBox Text="{Binding SettingsDraft.HttpTimeoutSeconds,UpdateSourceTrigger=PropertyChanged,ValidatesOnExceptions=True}"/>
+                </StackPanel>
+                <StackPanel Margin="0,0,0,17">
+                  <TextBlock Text="Bildcache in Tagen (0 = immer neu laden)" Style="{StaticResource FieldLabel}"/>
+                  <TextBox Text="{Binding SettingsDraft.ImageCacheDays,UpdateSourceTrigger=PropertyChanged,ValidatesOnExceptions=True}"/>
+                </StackPanel>
+                <StackPanel Margin="0,0,0,17">
+                  <TextBlock Text="Workshop-Scan: Zeitlimit je Seite (Sekunden, 5–300)" Style="{StaticResource FieldLabel}"/>
+                  <TextBox Text="{Binding SettingsDraft.WorkshopScanTimeoutSeconds,UpdateSourceTrigger=PropertyChanged,ValidatesOnExceptions=True}"/>
+                </StackPanel>
+                <StackPanel Margin="0,0,0,17">
+                  <TextBlock Text="Config: maximale Dateigröße (KiB, 16–4096)" Style="{StaticResource FieldLabel}"/>
+                  <TextBox Text="{Binding SettingsDraft.ConfigMaxKiB,UpdateSourceTrigger=PropertyChanged,ValidatesOnExceptions=True}"/>
+                </StackPanel>
+                <WrapPanel Margin="0,0,0,12">
+                  <Button Content="Metadaten neu laden" Command="{Binding ActionCommand}" CommandParameter="refresh-all" Margin="0,0,8,8" icons:Iconify.Icon="{StaticResource IconRefresh}"/>
+                  <Button Content="Bildcache leeren" Command="{Binding ActionCommand}" CommandParameter="clear-cache" Margin="0,0,8,8" icons:Iconify.Icon="{StaticResource IconDelete}"/>
+                </WrapPanel>
+                <TextBlock Text="Der öffentliche Store-Endpunkt ist nicht als stabile Entwickler-API garantiert. Fehlende Bilder oder ein nicht verfügbarer Store-Eintrag blockieren lokale Modverwaltung nicht." Style="{StaticResource Muted}" Margin="0,7,0,16"/>
+              </StackPanel>
+            </Border>
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+      <TabItem Header="Tool-Updates">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+          <StackPanel Margin="0,0,10,0">
+            <Border Style="{StaticResource Card}" Margin="0,0,0,16">
+              <StackPanel>
+                <TextBlock Text="Workshop Studio aktualisieren" Style="{StaticResource SectionTitle}"/>
+                <TextBlock Text="Offizielle Releases: github.com/ZUMBYTE-AppSolution/WorkshopStudio" Style="{StaticResource Muted}" Margin="0,0,0,17"/>
+                <CheckBox IsChecked="{Binding SettingsDraft.CheckToolUpdatesOnStartup}">
+                  <TextBlock Text="Tool-Updates beim Start prüfen"/>
+                </CheckBox>
+                <WrapPanel Margin="0,0,0,12">
+                  <Button Content="Jetzt prüfen" Command="{Binding ActionCommand}" CommandParameter="check-updates" Margin="0,0,8,8" icons:Iconify.Icon="{StaticResource IconScan}"/>
+                </WrapPanel>
+                <TextBlock Text="Neue Versionen werden direkt bei den offiziellen GitHub-Releases geprüft. Download, SHA-256-Prüfung und Installation erfordern deine Bestätigung. Die Anwendung startet danach neu; Workspace und Einstellungen bleiben im Benutzerprofil. Steam-Mod-Updates werden getrennt verwaltet." Style="{StaticResource Muted}" Margin="0,7,0,16"/>
+              </StackPanel>
+            </Border>
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+      <TabItem Header="Daten">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+          <StackPanel Margin="0,0,10,0">
+            <Border Style="{StaticResource Card}" Margin="0,0,0,16">
+              <StackPanel>
+                <TextBlock Text="Arbeitsbereich" Style="{StaticResource SectionTitle}"/>
+                <StackPanel Margin="0,0,0,17">
+                  <TextBlock Text="Datenordner (Anzeige)" Style="{StaticResource FieldLabel}"/>
+                  <TextBox Text="{Binding DataPath,Mode=OneWay}" IsReadOnly="True"/>
+                </StackPanel>
+                <WrapPanel Margin="0,0,0,12">
+                  <Button Content="Datenordner öffnen" Command="{Binding ActionCommand}" CommandParameter="open-data" Margin="0,0,8,8" icons:Iconify.Icon="{StaticResource IconFolder}"/>
+                  <Button Content="JSON exportieren" Command="{Binding ActionCommand}" CommandParameter="export-workspace" Margin="0,0,8,8" icons:Iconify.Icon="{StaticResource IconExport}"/>
+                  <Button Content="JSON importieren" Command="{Binding ActionCommand}" CommandParameter="import-workspace" Margin="0,0,8,8" icons:Iconify.Icon="{StaticResource IconImport}"/>
+                  <Button Content="Arbeitsbereich sichern" Command="{Binding ActionCommand}" CommandParameter="workspace-backup" Margin="0,0,8,8" icons:Iconify.Icon="{StaticResource IconSave}"/>
+                </WrapPanel>
+                <TextBlock Text="Exportiert werden Profile, Pfade, Einstellungen und Verlauf. Passwörter, SteamCMD-Sitzungstoken und Web-Cookies sind ausdrücklich nicht enthalten. Beim Import bleiben Automationen zunächst deaktiviert. Lokale Mod-Quelldateien werden nicht mit exportiert." Style="{StaticResource Muted}" Margin="0,7,0,16"/>
+              </StackPanel>
+            </Border>
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+    </TabControl>
+  </DockPanel>
+</UserControl>

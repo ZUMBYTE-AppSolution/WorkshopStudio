@@ -1,0 +1,53 @@
+<UserControl xmlns:icons="clr-namespace:WorkshopStudio.Desktop.Services" Style="{StaticResource StudioView}" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="WorkshopStudio.Desktop.Views.AutomationView">
+  <DockPanel>
+    <WrapPanel DockPanel.Dock="Bottom" Margin="0,16,0,0">
+      <Button Content="Automation speichern" Command="{Binding ActionCommand}" CommandParameter="save-settings" Margin="0,0,8,8" Style="{StaticResource PrimaryButton}" icons:Iconify.Icon="{StaticResource IconSave}"/>
+      <Button Content="Änderungen prüfen" Command="{Binding ActionCommand}" CommandParameter="scan" Margin="0,0,8,8" icons:Iconify.Icon="{StaticResource IconScan}"/>
+    </WrapPanel>
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+      <StackPanel Margin="0,0,10,0">
+        <Border Style="{StaticResource Card}" Margin="0,0,0,16">
+          <StackPanel>
+            <TextBlock Text="Automatische Veröffentlichung" Style="{StaticResource SectionTitle}"/>
+            <CheckBox IsChecked="{Binding SettingsDraft.AutomationEnabled}">
+              <TextBlock Text="Automatische Uploads aktivieren"/>
+            </CheckBox>
+            <CheckBox IsChecked="{Binding SettingsDraft.WatchFolders}">
+              <TextBlock Text="Ordneränderungen überwachen"/>
+            </CheckBox>
+            <StackPanel Margin="0,0,0,17">
+              <TextBlock Text="Zielkanal" Style="{StaticResource FieldLabel}"/>
+              <ComboBox ItemsSource="{Binding Channels}" SelectedItem="{Binding SettingsDraft.AutomationChannel}"/>
+            </StackPanel>
+            <CheckBox IsChecked="{Binding SettingsDraft.AllowLiveAutomation}">
+              <TextBlock Text="Live-Automation ausdrücklich erlauben"/>
+            </CheckBox>
+            <TextBlock Text="Zusätzlich muss Auto-Publish in jeder betreffenden Mod aktiviert sein. Standardmäßig sind automatische Uploads ausgeschaltet. Workshop Studio muss für Überwachung und Zeitpläne geöffnet bleiben." Style="{StaticResource Muted}" Margin="0,7,0,16"/>
+          </StackPanel>
+        </Border>
+        <Border Style="{StaticResource Card}" Margin="0,0,0,16">
+          <StackPanel>
+            <TextBlock Text="Auslöser &amp; Ruhezeit" Style="{StaticResource SectionTitle}"/>
+            <StackPanel Margin="0,0,0,17">
+              <TextBlock Text="Ruhezeit nach letzter Dateiänderung (Sekunden, 5–3600)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding SettingsDraft.DebounceSeconds,UpdateSourceTrigger=PropertyChanged,ValidatesOnExceptions=True}"/>
+            </StackPanel>
+            <StackPanel Margin="0,0,0,17">
+              <TextBlock Text="Zeitplan: Manual / Interval / Daily" Style="{StaticResource FieldLabel}"/>
+              <ComboBox ItemsSource="{Binding ScheduleModes}" SelectedItem="{Binding SettingsDraft.ScheduleMode}"/>
+            </StackPanel>
+            <StackPanel Margin="0,0,0,17">
+              <TextBlock Text="Intervall in Minuten (1–10080)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding SettingsDraft.ScheduleIntervalMinutes,UpdateSourceTrigger=PropertyChanged,ValidatesOnExceptions=True}"/>
+            </StackPanel>
+            <StackPanel Margin="0,0,0,17">
+              <TextBlock Text="Tägliche Uhrzeit (HH:mm, lokale Windows-Zeit)" Style="{StaticResource FieldLabel}"/>
+              <TextBox Text="{Binding SettingsDraft.DailyTime,UpdateSourceTrigger=PropertyChanged,ValidatesOnExceptions=True}"/>
+            </StackPanel>
+            <TextBlock Text="Dateien werden erst nach Ablauf der Ruhezeit paketiert. Zeitpläne prüfen beim Fälligwerden auf Änderungen. Keine parallelen SteamCMD-Uploads und keine automatische Wiederholung ungeklärter Erst-Uploads." Style="{StaticResource Muted}" Margin="0,7,0,16"/>
+          </StackPanel>
+        </Border>
+      </StackPanel>
+    </ScrollViewer>
+  </DockPanel>
+</UserControl>

@@ -1,0 +1,42 @@
+<Window xmlns:icons="clr-namespace:WorkshopStudio.Desktop.Services" Style="{StaticResource StudioWindow}" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="WorkshopStudio.Desktop.Views.CollectionEditorWindow" Title="Collection bearbeiten" Width="900" Height="850" MinWidth="600" MinHeight="500" WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
+  <Grid Margin="26">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
+    <StackPanel Margin="0,0,0,20">
+      <TextBlock Text="Collection bearbeiten" FontSize="25" FontWeight="SemiBold"/>
+      <TextBlock Text="WORKSHOP STUDIO" Foreground="{DynamicResource AccentBrush}" FontSize="10" Margin="0,7,0,0"/>
+    </StackPanel>
+    <Grid Grid.Row="1">
+      <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="0,0,12,0">
+          <TextBlock Text="Spiel / App-Profil" Style="{StaticResource FieldLabel}"/>
+          <ComboBox x:Name="AppBox" DisplayMemberPath="Label" SelectedValuePath="Id" SelectedValue="{Binding AppProfileId}" SelectionChanged="App_SelectionChanged" Margin="0,0,0,16"/>
+          <StackPanel Margin="0,0,0,16">
+            <TextBlock Text="Collection-Name" Style="{StaticResource FieldLabel}"/>
+            <TextBox Text="{Binding Name,UpdateSourceTrigger=PropertyChanged,ValidatesOnExceptions=True}"/>
+          </StackPanel>
+          <StackPanel Margin="0,0,0,16">
+            <TextBlock Text="Beschreibung (lokaler Entwurf)" Style="{StaticResource FieldLabel}"/>
+            <TextBox Text="{Binding Description,UpdateSourceTrigger=PropertyChanged,ValidatesOnExceptions=True}" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" Height="120"/>
+          </StackPanel>
+          <StackPanel Margin="0,0,0,16">
+            <TextBlock Text="Steam-Collection-ID, optional (0 = noch nicht verknüpft)" Style="{StaticResource FieldLabel}"/>
+            <TextBox Text="{Binding SteamCollectionId,UpdateSourceTrigger=PropertyChanged,ValidatesOnExceptions=True}"/>
+          </StackPanel>
+          <TextBlock Text="Eigene Mods (Strg / Umschalt für Mehrfachauswahl)" Style="{StaticResource FieldLabel}"/>
+          <ListBox x:Name="ModsBox" SelectionMode="Extended" DisplayMemberPath="Name" Height="180" Margin="0,0,0,16"/>
+          <TextBlock Text="Weitere Workshop-IDs, mit Semikolon oder Zeilenumbruch getrennt" Style="{StaticResource FieldLabel}"/>
+          <TextBox x:Name="ExternalBox" AcceptsReturn="True" Height="90" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" Margin="0,0,0,15"/>
+          <TextBlock Text="Speichern erstellt oder ändert zunächst die lokale Collection. „Auf Steam anlegen“ öffnet anschließend den originalen Steam-Editor. Änderungen der Steam-Mitgliedschaften werden dort vorgenommen, nicht durch dieses lokale Formular." Style="{StaticResource Muted}" Margin="0,0,0,16"/>
+        </StackPanel>
+      </ScrollViewer>
+    </Grid>
+    <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+      <Button Content="Abbrechen" IsCancel="True" Margin="0,0,10,0" icons:Iconify.Icon="{StaticResource IconStop}"/>
+      <Button Content="Speichern" Style="{StaticResource PrimaryButton}" Click="Save_Click" IsDefault="True" icons:Iconify.Icon="{StaticResource IconSave}"/>
+    </StackPanel>
+  </Grid>
+</Window>

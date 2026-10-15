@@ -1,0 +1,10 @@
+**/bin/
+**/obj/
+artifacts/
+work/
+.vs/
+.idea/
+*.user
+*.suo
+*.tmp
+*.bak

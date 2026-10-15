@@ -1,0 +1,78 @@
+name: Publish Workshop Studio release
+
+"on":
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: workshop-studio-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  windows-x64:
+    runs-on: windows-2025
+    timeout-minutes: 40
+    defaults:
+      run:
+        shell: pwsh
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      DOTNET_NOLOGO: '1'
+    steps:
+      - name: Check out tagged source
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - name: Install .NET 10 SDK
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+        with:
+          dotnet-version: '10.0.402'
+      - name: Validate tag and release notes
+        id: version
+        run: |
+          [xml]$props = Get-Content Directory.Build.props -Raw
+          $version = [string]$props.Project.PropertyGroup.Version
+          if ($env:GITHUB_REF_NAME -ne "v$version" -or $version -notmatch '^\d+\.\d+\.\d+$') {
+            throw "Tag $env:GITHUB_REF_NAME does not match project version $version."
+          }
+          if (-not (Test-Path -LiteralPath "docs/RELEASE_$version.md")) {
+            throw "Release notes missing for $version."
+          }
+          "value=$version" >> $env:GITHUB_OUTPUT
+      - name: Source checks
+        run: |
+          python scripts/Check-Theme.py
+          python scripts/Check-Packaging.py
+          python scripts/Check-Login.py
+      - name: Build, self-test and publish Windows x64
+        run: ./scripts/Build.ps1
+      - name: Package complete source project
+        run: ./scripts/Package-Source.ps1
+      - name: Check payload and write checksums
+        run: |
+          $version = '${{ steps.version.outputs.value }}'
+          $package = "artifacts/WorkshopStudio-$version-win-x64.zip"
+          $source = "artifacts/WorkshopStudio-$version-Quellprojekt.zip"
+          if (-not (Test-Path -LiteralPath $package) -or -not (Test-Path -LiteralPath $source) -or
+              -not (Test-Path -LiteralPath 'artifacts/WorkshopStudio-win-x64/release-info.json')) {
+            throw 'Release payload is incomplete.'
+          }
+          $lines = @($package, $source) | ForEach-Object {
+            '{0}  {1}' -f (Get-FileHash -Algorithm SHA256 -LiteralPath $_).Hash, (Split-Path -Leaf $_)
+          }
+          $lines | Set-Content -LiteralPath artifacts/SHA256SUMS.txt -Encoding ascii
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $version = '${{ steps.version.outputs.value }}'
+          gh release create "v$version" `
+            "artifacts/WorkshopStudio-$version-win-x64.zip" `
+            "artifacts/WorkshopStudio-$version-Quellprojekt.zip" `
+            "artifacts/SHA256SUMS.txt" `
+            --verify-tag --latest --title "Workshop Studio $version" `
+            --notes-file "docs/RELEASE_$version.md"

@@ -1,0 +1,56 @@
+<UserControl xmlns:icons="clr-namespace:WorkshopStudio.Desktop.Services" Style="{StaticResource StudioView}" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="WorkshopStudio.Desktop.Views.AppsView">
+  <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <StackPanel Margin="0,0,10,0">
+      <WrapPanel Margin="0,0,0,12">
+        <Button Content="AppID hinzufügen" Command="{Binding ActionCommand}" CommandParameter="new-app" Margin="0,0,8,8" Style="{StaticResource PrimaryButton}" icons:Iconify.Icon="{StaticResource IconAdd}"/>
+        <Button Content="Steam-Daten aktualisieren" Command="{Binding ActionCommand}" CommandParameter="refresh-all" Margin="0,0,8,8" icons:Iconify.Icon="{StaticResource IconRefresh}"/>
+        <Button Content="Ausgewähltes Profil löschen" Command="{Binding ActionCommand}" CommandParameter="delete-app" Margin="0,0,8,8" icons:Iconify.Icon="{StaticResource IconDelete}"/>
+      </WrapPanel>
+      <TextBlock Text="Beliebige AppIDs können verwaltet werden. Ein App-Profil ist keine Garantie, dass das betreffende Spiel SteamCMD-Uploads erlaubt. Bilder werden direkt von Steam geladen und lokal zwischengespeichert." Style="{StaticResource Muted}" Margin="0,7,0,16"/>
+      <ItemsControl ItemsSource="{Binding VisibleApps}">
+        <ItemsControl.ItemsPanel>
+          <ItemsPanelTemplate>
+            <WrapPanel/>
+          </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <Border Style="{StaticResource Card}" Width="298" Padding="0" Margin="0,0,16,16">
+              <StackPanel>
+                <Border Background="{DynamicResource InputBrush}" Height="130" CornerRadius="11,11,0,0" ClipToBounds="True">
+                  <Grid>
+                    <TextBlock Text="STEAM ARTWORK" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource MutedBrush}"/>
+                    <Image Source="{Binding Artwork,Converter={StaticResource CachedImage}}" Stretch="UniformToFill"/>
+                  </Grid>
+                </Border>
+                <StackPanel Margin="17">
+                  <Grid>
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="42"/>
+                      <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Image Source="{Binding Icon,Converter={StaticResource CachedImage}}" Width="30" Height="30" Stretch="UniformToFill" HorizontalAlignment="Left"/>
+                    <StackPanel Grid.Column="1">
+                      <TextBlock Text="{Binding Name}" FontWeight="SemiBold"/>
+                      <TextBlock Text="{Binding AppId,StringFormat=AppID {0}}" Style="{StaticResource Muted}" FontSize="11"/>
+                    </StackPanel>
+                  </Grid>
+                  <WrapPanel Margin="0,16,0,0">
+                    <Button Content="Verwalten" Command="{Binding DataContext.EditAppCommand,RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" Padding="10,7" Margin="0,0,6,0" icons:Iconify.Icon="{StaticResource IconEdit}"/>
+                    <Button Content="Workshop" Command="{Binding DataContext.OpenAppCommand,RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" Padding="10,7" icons:Iconify.Icon="{StaticResource IconExternal}"/>
+                  </WrapPanel>
+                </StackPanel>
+              </StackPanel>
+            </Border>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+      <Border Style="{StaticResource Card}" Margin="0,0,0,16">
+        <StackPanel>
+          <TextBlock Text="Profil auswählen" Style="{StaticResource SectionTitle}"/>
+          <ComboBox ItemsSource="{Binding Apps}" DisplayMemberPath="Label" SelectedItem="{Binding SelectedApp}"/>
+        </StackPanel>
+      </Border>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

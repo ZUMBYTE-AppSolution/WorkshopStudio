@@ -1,0 +1,25 @@
+PASS  Version wiring: Assembly, sidebar and update comparison agree
+PASS  Windows icon binary: 9 valid 32-bit PNG frames: [16, 20, 24, 32, 40, 48, 64, 128, 256]
+PASS  Application icon wiring: EXE, WPF window style, title bar, sidebar
+PASS  Console transport selected on Windows
+PASS  Native ConPTY creation
+PASS  UTF-8 terminal input
+PASS  Output draining during UI prompts
+PASS  Console close on worker
+PASS  Cached login and no argv secrets
+PASS  No one-second prompt suppression
+PASS  Per-stream prompt detectors
+PASS  Abort distinct from timeout
+PASS  Release exclusive state in finally
+PASS  Prompt expression examples: 11 representative patterns + API-OK negative example (Python regex, not C#)
+PASS  Temporary password retained
+PASS  Login setup assistance
+PASS  Visible and exportable auth log
+PASS  Web sessions isolated by profile
+PASS  Web login status uses visible menu only
+PASS  Web runtime and navigation diagnostics
+PASS  Browser security retained
+PASS  Local process regression tests present
+
+22/22 offline source/asset checks passed.
+No C# compilation, native Windows execution, WPF rendering or real Steam login performed.

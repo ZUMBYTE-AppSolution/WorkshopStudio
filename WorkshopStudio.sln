@@ -1,0 +1,30 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 18
+VisualStudioVersion = 18.0.0.0
+MinimumVisualStudioVersion = 17.0.0.0
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorkshopStudio.Desktop", "src\WorkshopStudio.Desktop\WorkshopStudio.Desktop.csproj", "{D0F76973-2080-47B2-ACDA-087631F47B42}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorkshopStudio.Core", "src\WorkshopStudio.Core\WorkshopStudio.Core.csproj", "{22C66CE3-39D7-4387-BC07-D11EF0E3697F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorkshopStudio.SelfTest", "tests\WorkshopStudio.SelfTest\WorkshopStudio.SelfTest.csproj", "{AB99328A-42A8-4E22-8B6D-B52FFDD7A004}"
+EndProject
+Global
+ GlobalSection(SolutionConfigurationPlatforms) = preSolution
+  Debug|Any CPU = Debug|Any CPU
+  Release|Any CPU = Release|Any CPU
+ EndGlobalSection
+ GlobalSection(ProjectConfigurationPlatforms) = postSolution
+  {D0F76973-2080-47B2-ACDA-087631F47B42}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+  {D0F76973-2080-47B2-ACDA-087631F47B42}.Debug|Any CPU.Build.0 = Debug|Any CPU
+  {D0F76973-2080-47B2-ACDA-087631F47B42}.Release|Any CPU.ActiveCfg = Release|Any CPU
+  {D0F76973-2080-47B2-ACDA-087631F47B42}.Release|Any CPU.Build.0 = Release|Any CPU
+  {22C66CE3-39D7-4387-BC07-D11EF0E3697F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+  {22C66CE3-39D7-4387-BC07-D11EF0E3697F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+  {22C66CE3-39D7-4387-BC07-D11EF0E3697F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+  {22C66CE3-39D7-4387-BC07-D11EF0E3697F}.Release|Any CPU.Build.0 = Release|Any CPU
+  {AB99328A-42A8-4E22-8B6D-B52FFDD7A004}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+  {AB99328A-42A8-4E22-8B6D-B52FFDD7A004}.Debug|Any CPU.Build.0 = Debug|Any CPU
+  {AB99328A-42A8-4E22-8B6D-B52FFDD7A004}.Release|Any CPU.ActiveCfg = Release|Any CPU
+  {AB99328A-42A8-4E22-8B6D-B52FFDD7A004}.Release|Any CPU.Build.0 = Release|Any CPU
+ EndGlobalSection
+EndGlobal

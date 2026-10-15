@@ -1,0 +1,45 @@
+Workshop Studio 1.0.3 compared to delivered 1.0.2 source archive.
+
+Added: 10 (plus this generated report)
+Changed: 26
+Removed: 0
+Unchanged: 69
+
+ADD docs/DESIGN_AND_MOD_SCOPE_1.0.3.md
+ADD docs/PACKAGING_SOURCE_CHECKS.txt
+ADD scripts/Check-Packaging.py
+ADD src/WorkshopStudio.Core/ModSourceResolver.cs
+ADD src/WorkshopStudio.Desktop/ViewModels/DashboardAppCard.cs
+ADD src/WorkshopStudio.Desktop/Views/ModPickerWindow.xaml
+ADD src/WorkshopStudio.Desktop/Views/ModPickerWindow.xaml.cs
+ADD src/WorkshopStudio.Desktop/Views/PackagePreviewWindow.xaml
+ADD src/WorkshopStudio.Desktop/Views/PackagePreviewWindow.xaml.cs
+ADD tests/WorkshopStudio.SelfTest/ModSourceTests.cs
+MOD CHANGELOG.md
+MOD Directory.Build.props
+MOD README_DE.md
+MOD docs/ARCHITECTURE.md
+MOD docs/DELIVERY_CHECKS.md
+MOD docs/KNOWN_LIMITATIONS.md
+MOD docs/SETTINGS.md
+MOD docs/TESTPLAN.md
+MOD docs/THEME_SOURCE_CHECKS.txt
+MOD scripts/Check-Login.py
+MOD scripts/Check-Theme.py
+MOD src/WorkshopStudio.Core/Models.cs
+MOD src/WorkshopStudio.Core/PackageBuilder.cs
+MOD src/WorkshopStudio.Core/TemplateCreator.cs
+MOD src/WorkshopStudio.Core/WorkspaceStore.cs
+MOD src/WorkshopStudio.Desktop/MainWindow.xaml
+MOD src/WorkshopStudio.Desktop/Services/ThemeService.cs
+MOD src/WorkshopStudio.Desktop/Themes/StudioTheme.xaml
+MOD src/WorkshopStudio.Desktop/ViewModels/MainViewModel.cs
+MOD src/WorkshopStudio.Desktop/Views/DashboardView.xaml
+MOD src/WorkshopStudio.Desktop/Views/DashboardView.xaml.cs
+MOD src/WorkshopStudio.Desktop/Views/ModEditorWindow.xaml
+MOD src/WorkshopStudio.Desktop/Views/ModEditorWindow.xaml.cs
+MOD src/WorkshopStudio.Desktop/Views/ModsView.xaml
+MOD src/WorkshopStudio.Desktop/Views/SettingsView.xaml
+MOD tests/WorkshopStudio.SelfTest/Program.cs
+
+Source comparison only. No compilation or runtime verification.

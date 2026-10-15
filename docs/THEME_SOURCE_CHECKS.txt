@@ -1,0 +1,17 @@
+PASS  XML syntax: 28 XML/XAML/project files
+PASS  Explicit styles on application windows and views: {'Window': 11, 'UserControl': 10}
+PASS  Unique theme resources: 61 distinct root resources
+PASS  Named StaticResource/DynamicResource references: 423 named resource references
+PASS  No forward references within theme dictionary: 14 ordered StaticResource references
+PASS  Critical controls use application templates: 11 formerly uncovered controls
+PASS  Named WPF parts retained: 13 named parts retained
+PASS  Template trigger and animation targets: 46 trigger/animation targets
+PASS  Reference charcoal palette: Reference charcoal/orange palette; custom settings remain available
+PASS  No hard-coded white surfaces: No hard-coded white XAML surface backgrounds
+PASS  Text contrast inheritance: Generated labels can inherit parent foreground
+PASS  Explicit text and password menus: Themed menus; no copy/cut command for passwords
+PASS  Theme applied before first window: Saved theme applied before main-window construction
+PASS  Browser theme lifecycle: Initial surface and preferred color scheme configured
+PASS  XAML event-handler names: 35 XAML event handlers resolve in code-behind
+
+15/15 source checks passed. No C# compilation or WPF rendering performed.

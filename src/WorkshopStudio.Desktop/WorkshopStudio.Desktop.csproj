@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <AssemblyName>WorkshopStudio</AssemblyName>
+    <RootNamespace>WorkshopStudio.Desktop</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\WorkshopStudio.ico</ApplicationIcon>
+  </PropertyGroup>
+  <ItemGroup>
+    <Resource Include="Assets\WorkshopStudio.ico"/>
+    <Resource Include="Assets\WorkshopStudio.png"/>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\WorkshopStudio.Core\WorkshopStudio.Core.csproj"/>
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4191.47"/>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\docs\**\*" Link="docs\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest"/>
+  </ItemGroup>
+</Project>

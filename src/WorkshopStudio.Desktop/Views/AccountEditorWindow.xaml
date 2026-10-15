@@ -1,0 +1,33 @@
+<Window xmlns:icons="clr-namespace:WorkshopStudio.Desktop.Services" Style="{StaticResource StudioWindow}" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="WorkshopStudio.Desktop.Views.AccountEditorWindow" Title="Steam-Konto" Width="760" Height="590" MinWidth="600" MinHeight="500" WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
+  <Grid Margin="26">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
+    <StackPanel Margin="0,0,0,20">
+      <TextBlock Text="Steam-Konto" FontSize="25" FontWeight="SemiBold"/>
+      <TextBlock Text="WORKSHOP STUDIO" Foreground="{DynamicResource AccentBrush}" FontSize="10" Margin="0,7,0,0"/>
+    </StackPanel>
+    <Grid Grid.Row="1">
+      <StackPanel>
+        <StackPanel Margin="0,0,0,16">
+          <TextBlock Text="Steam-Loginname (nicht der öffentliche Profilname)" Style="{StaticResource FieldLabel}"/>
+          <TextBox Text="{Binding UserName,UpdateSourceTrigger=PropertyChanged,ValidatesOnExceptions=True}"/>
+        </StackPanel>
+        <StackPanel Margin="0,0,0,16">
+          <TextBlock Text="Lokaler Anzeigename" Style="{StaticResource FieldLabel}"/>
+          <TextBox Text="{Binding DisplayName,UpdateSourceTrigger=PropertyChanged,ValidatesOnExceptions=True}"/>
+        </StackPanel>
+        <CheckBox Content="Passwort im Windows-Anmeldedatenspeicher merken" IsChecked="{Binding RememberPassword}" Margin="0,0,0,16"/>
+        <TextBlock Text="Passwort (optional; leer lässt ein bereits gespeichertes Passwort unverändert)" Style="{StaticResource FieldLabel}"/>
+        <PasswordBox x:Name="PasswordInput" Margin="0,0,0,18"/>
+        <TextBlock Text="Ohne Häkchen bleibt ein hier eingegebenes Passwort nur bis zum Schließen der Anwendung im Arbeitsspeicher. SteamCMD versucht zuerst seine eigene Sitzung wiederzuverwenden. Falls Steam neue Anmeldedaten oder Steam Guard verlangt, wird die Eingabe abgefragt. Kein Passwort wird in JSON, VDF oder Prozessargumenten gespeichert." Style="{StaticResource Muted}" Margin="0,0,0,16"/>
+      </StackPanel>
+    </Grid>
+    <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+      <Button Content="Abbrechen" IsCancel="True" Margin="0,0,10,0" icons:Iconify.Icon="{StaticResource IconStop}"/>
+      <Button Content="Speichern" Style="{StaticResource PrimaryButton}" Click="Save_Click" IsDefault="True" icons:Iconify.Icon="{StaticResource IconSave}"/>
+    </StackPanel>
+  </Grid>
+</Window>

@@ -1,0 +1,47 @@
+<Window xmlns:icons="clr-namespace:WorkshopStudio.Desktop.Services" Style="{StaticResource StudioWindow}" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:wv="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf" x:Class="WorkshopStudio.Desktop.Views.BrowserWindow" Width="1190" Height="850" MinWidth="850" MinHeight="620" WindowStartupLocation="CenterOwner" ShowInTaskbar="False" Loaded="Window_Loaded" Closed="Window_Closed">
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
+    <Border Background="{DynamicResource PanelBrush}" Padding="16">
+      <Grid>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto"/>
+          <ColumnDefinition Width="*"/>
+          <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <Button Content="Zurück" Click="Back_Click" Margin="0,0,10,0" icons:Iconify.Icon="{StaticResource IconBack}"/>
+        <TextBox x:Name="Address" Grid.Column="1" IsReadOnly="True" VerticalAlignment="Center"/>
+        <StackPanel Grid.Column="2" Orientation="Horizontal">
+          <Button Content="Neu laden" Click="Reload_Click" Margin="10,0,0,0" icons:Iconify.Icon="{StaticResource IconRefresh}"/>
+          <Button Content="Im Standardbrowser" Click="External_Click" Margin="10,0,0,0" icons:Iconify.Icon="{StaticResource IconExternal}"/>
+        </StackPanel>
+      </Grid>
+    </Border>
+    <wv:WebView2 x:Name="Browser" Grid.Row="1" DefaultBackgroundColor="#0C0E13" Visibility="Collapsed"/>
+    <Border x:Name="StartupPanel" Grid.Row="1" Style="{StaticResource Card}" Margin="24" Padding="32">
+      <StackPanel VerticalAlignment="Center" MaxWidth="700">
+        <TextBlock Text="Steam Community" Style="{StaticResource SectionTitle}"/>
+        <TextBlock x:Name="StartupText" Text="Steam-Webfenster wird vorbereitet …" Style="{StaticResource Muted}" Margin="0,12,0,18"/>
+        <ProgressBar x:Name="StartupProgress" IsIndeterminate="True" Height="5" Margin="0,0,0,20"/>
+        <WrapPanel>
+          <Button Content="WebView2 installieren" Click="Runtime_Click" Margin="0,0,10,8" icons:Iconify.Icon="{StaticResource IconDownload}"/>
+          <Button Content="Steam im Standardbrowser" Click="External_Click" Margin="0,0,10,8" icons:Iconify.Icon="{StaticResource IconExternal}"/>
+        </WrapPanel>
+      </StackPanel>
+    </Border>
+    <Border Grid.Row="2" Background="{DynamicResource PanelBrush}" Padding="16">
+      <DockPanel>
+        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+          <Button x:Name="ScanButton" Content="Workshop-Inhalte ermitteln" Click="Scan_Click" Style="{StaticResource PrimaryButton}" Margin="0,0,10,0" Visibility="Collapsed" icons:Iconify.Icon="{StaticResource IconScan}"/>
+          <Button x:Name="CancelScanButton" Content="Scan abbrechen" Click="CancelScan_Click" Margin="0,0,10,0" Visibility="Collapsed" icons:Iconify.Icon="{StaticResource IconStop}"/>
+          <Button x:Name="SelectButton" Content="Diese Collection-ID verknüpfen" Click="Select_Click" Style="{StaticResource PrimaryButton}" Margin="0,0,10,0" icons:Iconify.Icon="{StaticResource IconCheck}"/>
+          <Button Content="Schließen" IsCancel="True" icons:Iconify.Icon="{StaticResource IconClose}"/>
+        </StackPanel>
+        <TextBlock x:Name="StatusText" Text="Originale Steam-Seite. Web-Anmeldung ist getrennt von SteamCMD." Style="{StaticResource Muted}" VerticalAlignment="Center" Margin="0,0,18,0"/>
+      </DockPanel>
+    </Border>
+  </Grid>
+</Window>

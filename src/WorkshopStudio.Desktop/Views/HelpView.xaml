@@ -1,0 +1,29 @@
+<UserControl xmlns:icons="clr-namespace:WorkshopStudio.Desktop.Services" Style="{StaticResource StudioView}" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="WorkshopStudio.Desktop.Views.HelpView">
+  <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <StackPanel Margin="0,0,10,0">
+      <Border Style="{StaticResource Card}" Margin="0,0,0,16">
+        <StackPanel>
+          <TextBlock Text="Einrichten &amp; veröffentlichen" Style="{StaticResource SectionTitle}"/>
+          <TextBlock Text="1. SteamCMD installieren. 2. Steam-Konto hinzufügen und anmelden. 3. AppID und Mod anlegen. 4. Paket prüfen. 5. Test-Upload einreihen und Warteschlange starten. 6. Steam-Eintrag prüfen; erst danach Live verwenden." Style="{StaticResource Muted}" Margin="0,7,0,16"/>
+          <WrapPanel Margin="0,0,0,12">
+            <Button Content="Dokumentation öffnen" Command="{Binding ActionCommand}" CommandParameter="help-docs" Margin="0,0,8,8" Style="{StaticResource PrimaryButton}" icons:Iconify.Icon="{StaticResource IconExternal}"/>
+            <Button Content="Systemdiagnose" Command="{Binding ActionCommand}" CommandParameter="diagnostics" Margin="0,0,8,8" icons:Iconify.Icon="{StaticResource IconScan}"/>
+            <Button Content="Workshop-Vereinbarung" Command="{Binding ActionCommand}" CommandParameter="workshop-terms" Margin="0,0,8,8" icons:Iconify.Icon="{StaticResource IconExternal}"/>
+          </WrapPanel>
+        </StackPanel>
+      </Border>
+      <Border Style="{StaticResource Card}" Margin="0,0,0,16">
+        <StackPanel>
+          <TextBlock Text="Was bewusst getrennt bleibt" Style="{StaticResource SectionTitle}"/>
+          <TextBlock Text="Collection-Verwaltung: lokal organisieren, auf Steam im originalen Web-Editor erstellen und bearbeiten. Kein erfundener Collection-Upload per SteamCMD.  Steam-Anmeldung: Weblogin und SteamCMD besitzen unterschiedliche Sitzungen. Auto-Login ist eine erneute Nutzung vorhandener Sitzungen, kein Umgehen von Steam Guard.  AppIDs: Multi-App-Verwaltung bedeutet nicht, dass jedes Spiel denselben Uploader oder dasselbe Dateiformat unterstützt.  Dieses Tool deployt und startet keine Gameserver. Es verändert weder deine Mod-Quellen noch deine Serverkonfiguration ohne eine explizite Aktion." Style="{StaticResource Muted}" Margin="0,7,0,16"/>
+        </StackPanel>
+      </Border>
+      <Border Style="{StaticResource Card}" Margin="0,0,0,16">
+        <StackPanel>
+          <TextBlock Text="Tastatur &amp; Sicherheit" Style="{StaticResource SectionTitle}"/>
+          <TextBlock Text="Strg+N: neue Mod · F5: Änderungen prüfen · Strg+S: Einstellungen speichern  Nur eigene oder zur Veröffentlichung freigegebene Inhalte hochladen. Quellcode im Workshop ist für Empfänger nicht geheim. Zugangsdaten gehören nie in Mod-Pakete.  Vollständiger Windows-Build und realer Steam-Upload müssen auf deinem Windows-Rechner geprüft werden; ein Live-Upload wurde bei der Erstellung nicht ausgeführt." Style="{StaticResource Muted}" Margin="0,7,0,16"/>
+        </StackPanel>
+      </Border>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>
