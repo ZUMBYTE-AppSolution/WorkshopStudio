@@ -48,6 +48,7 @@ jobs:
           python scripts/Check-Theme.py
           python scripts/Check-Packaging.py
           python scripts/Check-Login.py
+          python scripts/Check-Wiki.py
       - name: Build, self-test and publish Windows x64
         run: ./scripts/Build.ps1
       - name: Package complete source project

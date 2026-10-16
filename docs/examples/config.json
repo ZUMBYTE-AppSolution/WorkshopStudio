@@ -1,0 +1,7 @@
+{
+  "welcome": {
+    "enabled": true,
+    "message": "Willkommen auf dem Server"
+  },
+  "maxEvents": 8
+}

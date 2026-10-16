@@ -95,6 +95,7 @@
               </StackPanel>
               <TextBlock Text="Sichtbarkeit im Live-Kanal" Style="{StaticResource FieldLabel}"/>
               <ComboBox x:Name="VisibilityBox" SelectedIndex="{Binding Visibility}" Margin="0,0,0,18"/>
+              <CheckBox Content="Sichtbarkeit bei Bestandsupdates automatisch abgleichen" IsChecked="{Binding SynchronizeVisibility}" Margin="0,0,0,10"/>
               <TextBlock Text="Test-Uploads sind immer privat. Live- und Test-ID dürfen nie identisch sein. „Live“ bedeutet nicht automatisch öffentlich; die gewählte Sichtbarkeit entscheidet." Style="{StaticResource Muted}" Margin="0,0,0,16"/>
               <Border Style="{StaticResource Card}">
                 <StackPanel>

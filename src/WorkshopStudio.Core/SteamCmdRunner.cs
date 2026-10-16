@@ -7,6 +7,7 @@ namespace WorkshopStudio.Core;
 
 public enum SecretKind { Password, SteamGuard }
 public sealed record SteamCmdResult(int ExitCode, bool LoggedIn, bool Published, string Output, ulong? SteamId64 = null);
+public sealed record WorkshopDownloadResult(string ContentPath,SteamCmdResult Command);
 
 public sealed class SecretRedactor
 {
@@ -85,9 +86,41 @@ public sealed class SteamCmdRunner
         Func<SecretKind, CancellationToken, Task<string?>> requestSecret, IProgress<string>? log, CancellationToken ct,
         IProgress<SteamLoginSignal>? authentication = null)
     {
+        if(vdfPath is not null&&!File.Exists(vdfPath))throw new FileNotFoundException("Upload-Konfiguration fehlt.",vdfPath);
+        return await RunCommandAsync(exe,username,CreateArguments(username,vdfPath,vdfPath is null),timeout,requestSecret,log,ct,
+            vdfPath is null?"Sitzung prüfen, bei Bedarf neu anmelden.":"Workshop-Upload wird gestartet.",authentication).ConfigureAwait(false);
+    }
+    public static IReadOnlyList<string> CreateDownloadArguments(string username,uint appId,ulong itemId)
+    {
+        if(appId==0||itemId==0)throw new InvalidDataException("AppID und Workshop-ID für die Sicherung fehlen.");
+        var args=CreateArguments(username,null,true).ToList();
+        args.InsertRange(args.Count-2,["+workshop_download_item",appId.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            itemId.ToString(System.Globalization.CultureInfo.InvariantCulture),"validate"]);
+        return args;
+    }
+    public static string ConfirmDownload(string exe,uint appId,ulong itemId,SteamCmdResult result)
+    {
+        var match=Regex.Match(result.Output,@"Success\s*\.\s*Downloaded\s+item\s+"+itemId+@"\s+to\s+""(?<path>[^""\r\n]+)""",RegexOptions.IgnoreCase,TimeSpan.FromSeconds(1));
+        if(result.ExitCode!=0||!match.Success)throw new IOException("SteamCMD hat den Download des bisherigen Workshop-Inhalts nicht bestätigt. Update gestoppt; Protokoll prüfen.");
+        var expected=Path.GetFullPath(Path.Combine(Path.GetDirectoryName(Path.GetFullPath(exe))!,"steamapps","workshop","content",appId.ToString(),itemId.ToString()));
+        var actual=Path.GetFullPath(match.Groups["path"].Value).TrimEnd(Path.DirectorySeparatorChar);
+        if(!actual.Equals(expected.TrimEnd(Path.DirectorySeparatorChar),StringComparison.OrdinalIgnoreCase)||!Directory.Exists(actual))
+            throw new InvalidDataException("Workshop-Download liegt nicht im erwarteten Ordner für diese AppID und Workshop-ID. Update gestoppt.");
+        return actual;
+    }
+    public async Task<WorkshopDownloadResult> DownloadWorkshopItemAsync(string exe,string username,uint appId,ulong itemId,TimeSpan timeout,
+        Func<SecretKind,CancellationToken,Task<string?>> requestSecret,IProgress<string>? log,CancellationToken ct)
+    {
+        var result=await RunCommandAsync(exe,username,CreateDownloadArguments(username,appId,itemId),timeout,requestSecret,log,ct,
+            "Bisherigen Workshop-Inhalt für das Backup herunterladen.").ConfigureAwait(false);
+        return new(ConfirmDownload(exe,appId,itemId,result),result);
+    }
+    private async Task<SteamCmdResult> RunCommandAsync(string exe,string username,IReadOnlyList<string> arguments,TimeSpan timeout,
+        Func<SecretKind,CancellationToken,Task<string?>> requestSecret,IProgress<string>? log,CancellationToken ct,string operation,
+        IProgress<SteamLoginSignal>? authentication=null)
+    {
         ValidateUserName(username);
         if (!File.Exists(exe)) throw new FileNotFoundException("SteamCMD fehlt. Unter Einstellungen installieren oder Pfad auswählen.", exe);
-        if (vdfPath is not null && !File.Exists(vdfPath)) throw new FileNotFoundException("Upload-Konfiguration fehlt.", vdfPath);
         if (timeout <= TimeSpan.Zero) throw new ArgumentOutOfRangeException(nameof(timeout));
         await _exclusive.WaitAsync(ct).ConfigureAwait(false);
         IsBusy = true;
@@ -102,8 +135,8 @@ public sealed class SteamCmdRunner
         try
         {
             EnsureNoExternalInstance(exe);
-            log?.Report(vdfPath is null ? "SteamCMD: Sitzung prüfen, bei Bedarf neu anmelden." : "SteamCMD: Workshop-Upload wird gestartet.");
-            transport = SteamCmdTransport.Start(Path.GetFullPath(exe), CreateArguments(username, vdfPath, vdfPath is null));
+            log?.Report("SteamCMD: "+operation);
+            transport = SteamCmdTransport.Start(Path.GetFullPath(exe), arguments);
             log?.Report("Anbindung: " + transport.Name);
             using var kill = deadline.Token.Register(transport.Kill);
             var active = transport;

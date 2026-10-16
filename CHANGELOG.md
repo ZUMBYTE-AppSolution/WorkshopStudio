@@ -6,6 +6,30 @@
 
 Noch keine öffentlich freigegebenen Funktionsänderungen.
 
+## [1.3.0] - 2026-10-16
+
+### Hinzugefügt
+
+- Automatische Erkennung und Auswahl geänderter Titel, Beschreibungen, Versionshinweise, Release-Notizen und ausdrücklich gewählter Vorschaubilder.
+- Vergleich mit akzeptierten Metadaten-Baselines, aktuelle Changelog-Sektion und getrennte Notiz-/Bildprüfsummen für Test und Live.
+- Verpflichtende geprüfte Sicherung des bisherigen Steam-Item-Inhalts und seiner Metadaten vor jedem Bestandsupdate. Ein Backupfehler stoppt vor dem Upload.
+- Backup-Zugriff im Verlauf und eigenes Opt-in für automatische Live-Sichtbarkeitsänderungen.
+- Umfassendes [GitHub-Wiki](https://github.com/ZUMBYTE-AppSolution/WorkshopStudio/wiki) mit 16 Themenbereichen, Sidebar und Wiederherstellungsanleitung; in der App verlinkt.
+
+### Korrigiert
+
+- Automatische Jobs können nun erkannte Metadaten mit übertragen.
+- Zugehörige Metadatendateien außerhalb des eigentlichen Mod-Stamms werden überwacht, ohne das Upload-Paket um Nachbarordner zu erweitern.
+- Eigene erfolgreiche Uploads aktualisieren die Remote-Baseline für nachfolgende Jobs. Ein erneuter Import erhält tatsächliche lokale Editoränderungen.
+- Mehrzeilige `description=`-Angaben und die Workshop-Projektebene über `Contents/mods` werden erkannt.
+- Config-Kopieren wiederholt kurz bei gesperrter Windows-Zwischenablage und prüft den übernommenen Text.
+
+### Geprüft
+
+- 162 Selbsttests, Windows-Build, Quellprüfungen und WPF-Updateplan ausgeführt.
+- Echter lesender Steam-Download mit geprüftem Backup aus 13 Inhaltsdateien; Steam-Zeitstand und Nutzer-Workspace unverändert.
+- Kein echter Steam-Upload oder Wiederherstellungs-Upload. [Prüfbericht und offene Punkte](docs/DELIVERY_1.3.0.md).
+
 ## [1.2.0] - 2026-10-15
 
 ### Hinzugefügt

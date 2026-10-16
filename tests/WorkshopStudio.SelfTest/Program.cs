@@ -26,6 +26,7 @@ internal static partial class Program
         if (args.Contains("+login")) return FakeSteamCmd(args);
         if (args.Contains("--live-public-portfolio")) return await LivePublicPortfolioAsync();
         if (args.Contains("--check-local-session")) return await CheckLocalSessionAsync();
+        if(args.Length==2&&args[0]=="--backup-own-workshop")return await LiveBackupDiagnosticAsync(args[1]);
         RegisterSteamLoginTests();
         var root = Path.Combine(Path.GetTempPath(), "WorkshopStudio-tests-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
@@ -42,6 +43,7 @@ internal static partial class Program
         RegisterModSourceTests(root,builder,store);
         RegisterWorkshopTests(root);
         RegisterReleaseUpdaterTests(root);
+        RegisterMetadataBackupTests(root);
 
         Test("VDF: Escape und Roundtrip", () => {
             var vdf = VdfWriter.Build(app, mod, ReleaseChannel.Live, content, "");

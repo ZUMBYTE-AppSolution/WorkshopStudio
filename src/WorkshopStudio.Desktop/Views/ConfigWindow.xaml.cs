@@ -8,6 +8,7 @@ namespace WorkshopStudio.Desktop.Views;
 public partial class ConfigWindow : Window
 {
     private readonly ConfigDiscoveryResult _result;
+    internal Task LastCopyTask {get;private set;}=Task.CompletedTask;
     public ConfigWindow(string modName, ConfigDiscoveryResult result)
     {
         InitializeComponent(); _result=result; Heading.Text="Config / Befehle · "+modName;
@@ -25,12 +26,19 @@ public partial class ConfigWindow : Window
             (doc.PossibleSecrets?" · Mögliche Zugangsdaten: Rohtext vor Weitergabe prüfen.":"");
     }
     private TextBox ActiveText() => Tabs.SelectedIndex switch { 1 => OptionsText, 2 => ServerText, _ => RawText };
-    private void CopySelection_Click(object sender,RoutedEventArgs e)
+    private async void CopySelection_Click(object sender,RoutedEventArgs e)
     {
         var text=ActiveText().SelectedText;
-        if(text.Length>0)Clipboard.SetText(text);
+        if(text.Length>0) {
+            LastCopyTask=DesktopClipboard.SetTextAsync(text);
+            try{await LastCopyTask;}catch(Exception ex){DesktopDialogs.Error(ex,"Text konnte nicht kopiert werden");}
+        }
     }
-    private void CopyAll_Click(object sender,RoutedEventArgs e) => Clipboard.SetText(ActiveText().Text);
+    private async void CopyAll_Click(object sender,RoutedEventArgs e)
+    {
+        LastCopyTask=DesktopClipboard.SetTextAsync(ActiveText().Text);
+        try{await LastCopyTask;}catch(Exception ex){DesktopDialogs.Error(ex,"Text konnte nicht kopiert werden");}
+    }
     private void Wrap_Click(object sender,RoutedEventArgs e)
     {
         RawText.TextWrapping=OptionsText.TextWrapping=WrapBox.IsChecked==true?TextWrapping.Wrap:TextWrapping.NoWrap;

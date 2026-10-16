@@ -28,6 +28,7 @@ public sealed class AppProfile
     [JsonIgnore] public string Icon => File.Exists(IconCachePath) ? IconCachePath : Artwork;
 }
 
+public sealed record MetadataBaseline(string TitleHash,string DescriptionHash);
 public sealed class ModProject
 {
     public Guid Id { get; set; } = Guid.NewGuid();
@@ -47,6 +48,7 @@ public sealed class ModProject
     public string ChangeNote { get; set; } = "Update {version}";
     public string Exclusions { get; set; } = "";
     public int Visibility { get; set; } = 2;
+    public bool SynchronizeVisibility { get; set; }
     public ulong WorkshopId { get; set; }
     public ulong TestWorkshopId { get; set; }
     public string TestTitleSuffix { get; set; } = " [TEST]";
@@ -56,6 +58,10 @@ public sealed class ModProject
     public bool NeedsTestReconciliation { get; set; }
     public string LastLiveFingerprint { get; set; } = "";
     public string LastTestFingerprint { get; set; } = "";
+    public string LastLiveNoteHash { get; set; } = "";
+    public string LastTestNoteHash { get; set; } = "";
+    public string LastLivePreviewHash { get; set; } = "";
+    public string LastTestPreviewHash { get; set; } = "";
     public DateTimeOffset? LastPublishedAt { get; set; }
     public long LastPackageBytes { get; set; }
     public string Notes { get; set; } = "";
@@ -63,6 +69,10 @@ public sealed class ModProject
     public ulong OwnerSteamId64 { get; set; }
     public bool ImportedFromWorkshop { get; set; }
     public DateTimeOffset? RemoteBaselineUpdatedAt { get; set; }
+    public MetadataBaseline? LiveMetadataBaseline { get; set; }
+    public MetadataBaseline? TestMetadataBaseline { get; set; }
+    public MetadataBaseline? GetMetadataBaseline(ReleaseChannel c)=>c==ReleaseChannel.Live?LiveMetadataBaseline:TestMetadataBaseline;
+    public void SetMetadataBaseline(ReleaseChannel c,MetadataBaseline value){if(c==ReleaseChannel.Live)LiveMetadataBaseline=value;else TestMetadataBaseline=value;}
     [JsonIgnore] public string AppName { get; set; } = "";
     [JsonIgnore] public string ChangeState { get; set; } = "Nicht geprüft";
     [JsonIgnore] public string WorkshopLabel => WorkshopId == 0 ? "Noch nicht veröffentlicht" : WorkshopId.ToString();
@@ -71,6 +81,9 @@ public sealed class ModProject
     public void SetWorkshopId(ReleaseChannel c, ulong id) { if (c == ReleaseChannel.Live) WorkshopId = id; else TestWorkshopId = id; }
     public string GetFingerprint(ReleaseChannel c) => c == ReleaseChannel.Live ? LastLiveFingerprint : LastTestFingerprint;
     public void SetFingerprint(ReleaseChannel c, string hash) { if (c == ReleaseChannel.Live) LastLiveFingerprint = hash; else LastTestFingerprint = hash; }
+    public string GetLastNoteHash(ReleaseChannel c)=>c==ReleaseChannel.Live?LastLiveNoteHash:LastTestNoteHash;
+    public string GetLastPreviewHash(ReleaseChannel c)=>c==ReleaseChannel.Live?LastLivePreviewHash:LastTestPreviewHash;
+    public void SetMetadataHashes(ReleaseChannel c,string note,string preview) { if(c==ReleaseChannel.Live){if(note.Length>0)LastLiveNoteHash=note;if(preview.Length>0)LastLivePreviewHash=preview;}else{if(note.Length>0)LastTestNoteHash=note;if(preview.Length>0)LastTestPreviewHash=preview;} }
     public bool NeedsReconciliation(ReleaseChannel c) => c == ReleaseChannel.Live ? NeedsLiveReconciliation : NeedsTestReconciliation;
     public void SetReconciliation(ReleaseChannel c, bool value) { if (c == ReleaseChannel.Live) NeedsLiveReconciliation = value; else NeedsTestReconciliation = value; }
 }
@@ -122,6 +135,8 @@ public sealed class PublishJob
     public long PackageBytes { get; set; }
     public ulong PublishedFileId { get; set; }
     public string RemoteVerification { get; set; } = "Nicht geprüft";
+    public string PreUpdateBackupPath { get; set; } = "";
+    public string MetadataSummary { get; set; } = "";
     public bool Automatic { get; set; }
     [JsonIgnore] public string CreatedLabel => CreatedAt.ToLocalTime().ToString("dd.MM. HH:mm");
     [JsonIgnore] public string StatusLabel => Status switch {
@@ -151,6 +166,7 @@ public sealed class StudioSettings
     public int ImageCacheDays { get; set; } = 7;
     public ReleaseChannel DefaultChannel { get; set; } = ReleaseChannel.Test;
     public bool OnlyChanged { get; set; } = true;
+    public bool AutoDetectMetadata { get; set; } = true;
     public bool ExcludePotentialSecrets { get; set; } = true;
     public bool ValidateZomboidLayout { get; set; } = true;
     public bool OpenWorkshopAfterPublish { get; set; }
@@ -200,6 +216,7 @@ public sealed class RemoteWorkshopItem
     public string VersionSource { get; set; } = "Nicht angegeben";
     public string RemoteChangelogStatus { get; set; } = "Nicht angefragt";
     public string RemoteChangelog { get; set; } = "";
+    public List<string> RemoteChangeNotes { get; set; } = [];
     public string MetadataSource { get; set; } = "Steam-Profil";
     public DateTimeOffset FetchedAt { get; set; } = DateTimeOffset.UtcNow;
     public Dictionary<string,RemoteFieldStatus> FieldStatus { get; set; } = [];

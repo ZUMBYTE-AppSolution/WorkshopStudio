@@ -83,6 +83,10 @@
                 <CheckBox IsChecked="{Binding SettingsDraft.OnlyChanged}">
                   <TextBlock Text="Unveränderte Pakete überspringen"/>
                 </CheckBox>
+                <CheckBox IsChecked="{Binding SettingsDraft.AutoDetectMetadata}">
+                  <TextBlock Text="Geänderte lokale Metadaten automatisch erkennen und mit aktualisieren"/>
+                </CheckBox>
+                <TextBlock Text="Beschreibung, Titel, Version und aktuelle Changelog-Notiz werden mit Steam verglichen. Manuelle Profiländerungen gehen vor importierten Werten. Fehlende lokale Angaben löschen nichts; bekannte Notizen werden nicht erneut angehängt." Style="{StaticResource Muted}" Margin="0,4,0,12"/>
                 <CheckBox IsChecked="{Binding SettingsDraft.StopQueueOnError}">
                   <TextBlock Text="Warteschlange bei einem Fehler stoppen"/>
                 </CheckBox>
@@ -126,6 +130,7 @@
             <Border Style="{StaticResource Card}" Margin="0,0,0,16">
               <StackPanel>
                 <TextBlock Text="Pakete &amp; Backups" Style="{StaticResource SectionTitle}"/>
+                <TextBlock Text="Vor jedem Bestandsupdate wird der bisherige Workshop-Inhalt von Steam heruntergeladen und mit Metadaten, Vorschaubild und SHA-256-Dateiliste gesichert. Ohne geprüftes Backup startet der Upload nicht." TextWrapping="Wrap" Margin="0,6,0,14"/>
                 <CheckBox IsChecked="{Binding SettingsDraft.CreatePackageBackups}">
                   <TextBlock Text="Nach erfolgreichem Upload Paket-Backup erstellen"/>
                 </CheckBox>
@@ -133,7 +138,7 @@
                   <TextBlock Text="Erfolgreiche Paketordner behalten"/>
                 </CheckBox>
                 <StackPanel Margin="0,0,0,17">
-                  <TextBlock Text="Paket-Backups pro Mod und Kanal behalten" Style="{StaticResource FieldLabel}"/>
+                  <TextBlock Text="Backups je Workshop-Eintrag bzw. Mod und Kanal behalten" Style="{StaticResource FieldLabel}"/>
                   <TextBox Text="{Binding SettingsDraft.BackupRetention,UpdateSourceTrigger=PropertyChanged,ValidatesOnExceptions=True}"/>
                 </StackPanel>
                 <StackPanel Margin="0,0,0,17">

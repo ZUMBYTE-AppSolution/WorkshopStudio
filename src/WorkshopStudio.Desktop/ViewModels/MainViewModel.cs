@@ -210,6 +210,8 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             case "cancel-job":await CancelJobAsync();break;
             case "retry-job":await RetryJobAsync();break;
             case "open-log":OpenJobLog();break;
+            case "help-wiki":DesktopDialogs.OpenUrl("https://github.com/ZUMBYTE-AppSolution/WorkshopStudio/wiki");break;
+            case "open-job-backup":var backupPath=Required(SelectedJob,"Verlaufseintrag").PreUpdateBackupPath;if(!File.Exists(backupPath))throw new FileNotFoundException("Für diesen Vorgang ist keine Sicherung vor einem Update vorhanden. Ältere Sicherungen können gemäß Aufbewahrung entfernt worden sein.");DesktopDialogs.OpenFolder(Path.GetDirectoryName(backupPath)!);break;
             case "clear-history":EnsureIdle();if(DesktopDialogs.Confirm("Abgeschlossene Einträge aus dem Verlauf entfernen? Protokolldateien bleiben erhalten.")){Data.Jobs.RemoveAll(j=>j.Status is not JobStatus.Pending);await SaveAsync();}break;
             case "new-account":await EditAccountAsync(null);break;
             case "edit-account":await EditAccountAsync(Required(SelectedAccount,"Konto"));break;
@@ -331,6 +333,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     private async Task DuplicateModAsync()
     {
         EnsureIdle();var m=WorkspaceStore.Clone(Required(SelectedMod,"Mod"));m.Id=Guid.NewGuid();m.Name+=" Kopie";m.WorkshopId=0;m.TestWorkshopId=0;m.ImportedFromWorkshop=false;m.OwnerSteamId64=0;m.RemoteBaselineUpdatedAt=null;m.LastLiveFingerprint="";m.LastTestFingerprint="";m.LastPublishedAt=null;m.AutoPublish=false;m.NeedsLiveReconciliation=false;m.NeedsTestReconciliation=false;
+        m.LastLiveNoteHash=m.LastTestNoteHash=m.LastLivePreviewHash=m.LastTestPreviewHash="";m.LiveMetadataBaseline=m.TestMetadataBaseline=null;
         // The source is deliberately shared; the editor shows the original path for an explicit change.
         var d=new ModEditorWindow(m,Data.Apps,Store.Root){Owner=DesktopDialogs.Owner};if(d.ShowDialog()!=true)return;Data.Mods.Add(m);SelectedMod=m;await SaveAsync();ConfigureAutomation();
     }
@@ -365,7 +368,19 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     {
         EnsureIdle();IsBusy=true;_operation=new();
         try{foreach(var m in VisibleMods.ToArray()){
-            try{var app=Data.Apps.Single(a=>a.Id==m.AppProfileId);var snapshot=await Task.Run(()=>_builder.BuildAsync(app,m,Settings.DefaultChannel,WorkspaceStore.Clone(Settings),Guid.NewGuid(),null,_operation.Token));m.ChangeState=snapshot.Fingerprint==m.GetFingerprint(Settings.DefaultChannel)?"Unverändert":"Änderungen vorhanden";_builder.DeleteOwnedStage(snapshot.Root);}
+            try{
+                var app=Data.Apps.Single(a=>a.Id==m.AppProfileId);var token=_operation.Token;
+                var cached=Data.RemoteItems.FirstOrDefault(r=>r.Id==m.GetWorkshopId(Settings.DefaultChannel));
+                var schema=await Task.Run(()=>LocalWorkshopSchemaReader.Inspect(app,m),token);
+                var effective=WorkshopMetadataPlanner.ResolveLocal(m,schema,cached,Settings.AutoDetectMetadata,Settings.DefaultChannel);
+                var snapshot=await Task.Run(()=>_builder.BuildAsync(app,effective,Settings.DefaultChannel,WorkspaceStore.Clone(Settings),Guid.NewGuid(),null,token),token);
+                var metadata=cached is null?null:WorkshopMetadataPlanner.Compare(effective,Settings.DefaultChannel,cached,
+                    await WorkshopMetadataPlanner.HashFileAsync(effective.PreviewFile,token),
+                    await WorkshopMetadataPlanner.HashFileAsync(File.Exists(cached.PreviewCachePath)?cached.PreviewCachePath:"",token),
+                    cached.RemoteChangelogStatus!="Nicht angefragt"&&!cached.RemoteChangelogStatus.StartsWith("Nicht abrufbar",StringComparison.Ordinal));
+                m.ChangeState=metadata?.Fields.Count>0?"Metadaten geändert":snapshot.Fingerprint==m.GetFingerprint(Settings.DefaultChannel)?"Unverändert":"Änderungen vorhanden";
+                _builder.DeleteOwnedStage(snapshot.Root);
+            }
             catch(OperationCanceledException){throw;}catch(Exception e){m.ChangeState="Prüfung fehlgeschlagen";AppendLog(m.Name+": "+e.Message);}Refresh();
         }Status="Änderungsprüfung abgeschlossen.";}finally{_operation?.Dispose();_operation=null;IsBusy=false;}
     }
@@ -387,7 +402,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             else {
                 item.LocalModId=old.LocalModId;
                 if(item.PreviewUrl==old.PreviewUrl)item.PreviewCachePath=old.PreviewCachePath;
-                if(item.UpdatedAt==old.UpdatedAt){item.RemoteChangelog=old.RemoteChangelog;item.RemoteChangelogStatus=old.RemoteChangelogStatus;}
+                if(item.UpdatedAt==old.UpdatedAt){item.RemoteChangelog=old.RemoteChangelog;item.RemoteChangelogStatus=old.RemoteChangelogStatus;item.RemoteChangeNotes=old.RemoteChangeNotes;}
                 if(item.FieldStatus.GetValueOrDefault("details") is RemoteFieldStatus.Error or RemoteFieldStatus.AccessDenied ||
                    item.FieldStatus.GetValueOrDefault("owner") != RemoteFieldStatus.Known) {
                     old.FetchedAt=item.FetchedAt; continue;
@@ -424,12 +439,12 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         }
         if(item.FileType!=0)throw new InvalidOperationException("Dieser Inhaltstyp wird angezeigt, aber nicht als Mod importiert.");
         var existing=Data.Mods.FirstOrDefault(m=>m.WorkshopId==item.Id||m.TestWorkshopId==item.Id);
-        if(existing is not null) {item.LocalModId=existing.Id;SelectedMod=existing;await SaveAsync();Status="Workshop-ID war bereits lokal zugeordnet.";return;}
+        if(existing is not null) {item.LocalModId=existing.Id;SelectedMod=existing;if(existing.WorkshopId==item.Id)existing.RemoteBaselineUpdatedAt=item.UpdatedAt;WorkshopMetadataPlanner.RememberBaseline(existing,existing.WorkshopId==item.Id?ReleaseChannel.Live:ReleaseChannel.Test,item,true);await SaveAsync();Status="Workshop-ID zugeordnet; zuletzt gelesener Steam-Stand als Baseline übernommen. Lokale Editoränderungen erhalten.";return;}
         var mod=new ModProject{AppProfileId=app.Id,Name=item.Title,Version="",Description=item.Description,
             PreviewFile="",Visibility=item.Visibility??2,WorkshopId=item.Id,OwnerSteamId64=item.OwnerSteamId64,
             ImportedFromWorkshop=true,RemoteBaselineUpdatedAt=item.UpdatedAt,ContentFolder="",AutoPublish=false,Enabled=true,
             ChangeNote=""};
-        Data.Mods.Add(mod);item.LocalModId=mod.Id;SelectedMod=mod;
+        WorkshopMetadataPlanner.RememberBaseline(mod,ReleaseChannel.Live,item);Data.Mods.Add(mod);item.LocalModId=mod.Id;SelectedMod=mod;
         await SaveAsync();Status="Vorhandene Workshop-ID lokal importiert. Für Inhaltsupdates eine einzelne lokale Mod zuordnen.";
     }
     private async Task ImportAllWorkshopAsync()
@@ -450,7 +465,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         if(item.RemoteChangelogStatus=="Nicht angefragt") {
             try {
                 var notes=await _steam.GetChangeNotesAsync(item.Id,CancellationToken.None);
-                item.RemoteChangelog=notes.Text;item.RemoteChangelogStatus=notes.Status;
+                item.RemoteChangelog=notes.Text;item.RemoteChangelogStatus=notes.Status;item.RemoteChangeNotes=notes.Notes.ToList();
                 item.FieldStatus["changelog"]=notes.Text.Length==0?RemoteFieldStatus.NotProvided:RemoteFieldStatus.Known;
                 await SaveAsync();
             } catch(Exception ex) when(ex is HttpRequestException or IOException or InvalidDataException or TaskCanceledException) {
@@ -571,40 +586,73 @@ public sealed class MainViewModel : ObservableObject, IDisposable
                 var source=Data.Mods.FirstOrDefault(m=>m.Id==job.ModId);if(source is null){job.Status=JobStatus.Failed;job.Message="Mod-Profil fehlt.";await SaveAsync();continue;}
                 var m=WorkspaceStore.Clone(source);var app=WorkspaceStore.Clone(Data.Apps.Single(a=>a.Id==m.AppProfileId));var settings=WorkspaceStore.Clone(Settings);
                 PackageSnapshot? snapshot=null;bool uploadStarted=false;var originalId=m.GetWorkshopId(job.Channel);
+                WorkshopMetadataPlan? metadata=null;IReadOnlyCollection<string>? writtenFields=null;
                 job.StartedAt=DateTimeOffset.UtcNow;job.Status=JobStatus.Preparing;job.LogFile=Path.Combine(Store.LogRoot,job.Id.ToString("N")+".log");
                 var progress=new Progress<string>(line=>{AppendLog(line);try{File.AppendAllText(job.LogFile,$"[{DateTime.Now:O}] {line}\n");}catch(IOException){}});
                 try{
                     if(!m.Enabled)throw new InvalidOperationException("Mod wurde deaktiviert.");
                     if(m.NeedsReconciliation(job.Channel))throw new InvalidOperationException("Ungeklärter Erst-Upload. Vor erneutem Versuch Workshop-ID prüfen.");
-                    await SaveAsync();Status="Paketierung: "+m.Name;
+                    await SaveAsync();Status="Metadaten prüfen: "+m.Name;
+                    var cached=Data.RemoteItems.FirstOrDefault(r=>r.Id==originalId&&r.OwnerSteamId64==account.VerifiedWebSteamId64);
+                    var schema=await Task.Run(()=>LocalWorkshopSchemaReader.Inspect(app,m),token);
+                    m=WorkshopMetadataPlanner.ResolveLocal(m,schema,cached,settings.AutoDetectMetadata,job.Channel);
+                    RemoteWorkshopItem? current=null;var remotePreview="";var historyRead=false;
+                    if(originalId>0) {
+                        if(account.VerifiedWebSteamId64==0 || m.OwnerSteamId64!=0&&m.OwnerSteamId64!=account.VerifiedWebSteamId64)
+                            throw new InvalidOperationException("Bestehender Eintrag: verifizierte Web-SteamID64 fehlt oder stimmt nicht mit dem importierten Besitzer überein.");
+                        if(cached is null)throw new InvalidOperationException("Ziel-ID im Bereich 'Meine Workshop-Inhalte' zuerst mit diesem Konto ermitteln.");
+                        current=new RemoteWorkshopItem{Id=originalId,OwnerSteamId64=account.VerifiedWebSteamId64,FileType=cached.FileType};
+                        await _steam.EnrichWorkshopItemsAsync([current],token);
+                        if(current.FieldStatus.GetValueOrDefault("owner")!=RemoteFieldStatus.Known||current.ConsumerAppId!=app.AppId||current.FileType!=0)
+                            throw new InvalidOperationException("Eigentümer, AppID oder Dateityp des Ziel-Eintrags konnte vor Upload nicht bestätigt werden.");
+                        if(cached.UpdatedAt is null||current.UpdatedAt is null||cached.UpdatedAt!=current.UpdatedAt)
+                            throw new InvalidOperationException("Remote-Stand seit dem letzten Scan geändert oder nicht überprüfbar. Bibliothek erneut ermitteln und Änderungen prüfen.");
+                        if(job.Channel==ReleaseChannel.Live&&m.ImportedFromWorkshop&&m.RemoteBaselineUpdatedAt!=current.UpdatedAt)
+                            throw new InvalidOperationException("Import-Baseline und aktueller Steam-Stand weichen ab. Konflikt zuerst prüfen.");
+                        try {
+                            var notes=await _steam.GetChangeNotesAsync(originalId,token);current.RemoteChangelog=notes.Text;
+                            current.RemoteChangelogStatus=notes.Status;current.RemoteChangeNotes=notes.Notes.ToList();historyRead=true;
+                        } catch(Exception ex) when(ex is HttpRequestException or IOException or InvalidDataException or TaskCanceledException) {
+                            token.ThrowIfCancellationRequested();current.RemoteChangelogStatus="Nicht abrufbar: "+ex.Message;
+                        }
+                        if(current.PreviewUrl.Length>0)remotePreview=await _steam.CacheWorkshopPreviewAsync(current,0,token);
+                        metadata=WorkshopMetadataPlanner.Compare(m,job.Channel,current,
+                            await WorkshopMetadataPlanner.HashFileAsync(m.PreviewFile,token),
+                            await WorkshopMetadataPlanner.HashFileAsync(remotePreview,token),historyRead);
+                        job.MetadataSummary=metadata.Summary;AppendLog(metadata.Summary);
+                    }
+                    Status="Paketierung: "+m.Name;
                     snapshot=await Task.Run(()=>_builder.BuildAsync(app,m,job.Channel,settings,job.Id,progress,token),token);
                     job.StageFolder=snapshot.Root;job.PackageBytes=snapshot.Bytes;
-                    if(settings.OnlyChanged&&originalId>0&&snapshot.Fingerprint==m.GetFingerprint(job.Channel)){
+                    if(settings.OnlyChanged&&originalId>0&&snapshot.Fingerprint==m.GetFingerprint(job.Channel)&&
+                        (job.Automatic&&!settings.AutoDetectMetadata||metadata?.Fields.Count==0)){
                         job.Status=JobStatus.Skipped;job.Message="Inhalt und Upload-Metadaten sind unverändert.";
                     }else{
-                        if(originalId>0) {
-                            if(account.VerifiedWebSteamId64==0 || m.OwnerSteamId64!=0&&m.OwnerSteamId64!=account.VerifiedWebSteamId64)
-                                throw new InvalidOperationException("Bestehender Eintrag: verifizierte Web-SteamID64 fehlt oder stimmt nicht mit dem importierten Besitzer überein.");
-                            var cached=Data.RemoteItems.FirstOrDefault(r=>r.Id==originalId&&r.OwnerSteamId64==account.VerifiedWebSteamId64)
-                                ?? throw new InvalidOperationException("Ziel-ID im Bereich 'Meine Workshop-Inhalte' zuerst mit diesem Konto ermitteln.");
-                            var current=new RemoteWorkshopItem{Id=originalId,OwnerSteamId64=account.VerifiedWebSteamId64};
-                            await _steam.EnrichWorkshopItemsAsync([current],token);
-                            if(current.FieldStatus.GetValueOrDefault("owner")!=RemoteFieldStatus.Known ||
-                               current.ConsumerAppId!=app.AppId)
-                                throw new InvalidOperationException("Eigentümer oder AppID des Ziel-Eintrags konnte vor Upload nicht bestätigt werden.");
-                            if(cached.UpdatedAt is null || current.UpdatedAt is null || cached.UpdatedAt!=current.UpdatedAt)
-                                throw new InvalidOperationException("Remote-Stand seit dem letzten Scan geändert oder nicht überprüfbar. Bibliothek erneut ermitteln und Änderungen prüfen.");
-                            if(m.ImportedFromWorkshop && m.RemoteBaselineUpdatedAt!=current.UpdatedAt)
-                                throw new InvalidOperationException("Import-Baseline und aktueller Steam-Stand weichen ab. Konflikt zuerst prüfen.");
-                            IReadOnlyCollection<string> fields=[];
+                        if(originalId>0 && current is not null && metadata is not null) {
+                            IReadOnlyCollection<string> fields=settings.AutoDetectMetadata?metadata.Fields:[];
                             if(!job.Automatic) {
-                                var plan=new UpdatePlanWindow(account,app,m,job.Channel,current,snapshot){Owner=DesktopDialogs.Owner};
+                                var plan=new UpdatePlanWindow(account,app,m,job.Channel,current,snapshot,metadata,settings.AutoDetectMetadata){Owner=DesktopDialogs.Owner};
                                 if(plan.ShowDialog()!=true)throw new OperationCanceledException("Update-Plan nicht freigegeben.");
                                 fields=plan.SelectedFields;
                             }
+                            job.MetadataSummary+="\nFür diesen Upload: "+(fields.Count==0?"nur Inhalt":string.Join(", ",fields));AppendLog(job.MetadataSummary);
+                            writtenFields=fields;
                             var preview=string.IsNullOrWhiteSpace(m.PreviewFile)?"":Path.Combine(snapshot.Root,"preview"+Path.GetExtension(m.PreviewFile));
                             await File.WriteAllTextAsync(snapshot.VdfPath,
                                 VdfWriter.Build(app,m,job.Channel,snapshot.ContentPath,preview,fields),new UTF8Encoding(false),token);
+                            Status="Bisherigen Workshop-Stand sichern: "+m.Name;
+                            var download=await _runner.DownloadWorkshopItemAsync(settings.SteamCmdPath,account.UserName,app.AppId,originalId,
+                                TimeSpan.FromMinutes(settings.UploadTimeoutMinutes),CreateSecretProvider(account),progress,token);
+                            if(download.Command.SteamId64!=account.VerifiedWebSteamId64)throw new InvalidOperationException("Backup-Download hat das erwartete Steam-Konto nicht bestätigt.");
+                            var backup=await Task.Run(()=>new WorkshopItemBackup(Store).CreateAsync(current,source,job.Channel,download.ContentPath,
+                                remotePreview,settings,progress,token),token);
+                            job.PreUpdateBackupPath=backup.Path;await SaveAsync();
+                            var recheck=new RemoteWorkshopItem{Id=originalId,OwnerSteamId64=account.VerifiedWebSteamId64};
+                            await _steam.EnrichWorkshopItemsAsync([recheck],token);
+                            if(recheck.FieldStatus.GetValueOrDefault("owner")!=RemoteFieldStatus.Known||recheck.ConsumerAppId!=app.AppId||
+                                recheck.UpdatedAt!=current.UpdatedAt||recheck.Title!=current.Title||recheck.Description!=current.Description||
+                                recheck.PreviewUrl!=current.PreviewUrl||recheck.Visibility!=current.Visibility)
+                                throw new InvalidOperationException("Steam wurde während der Sicherung geändert. Backup behalten; Update vor Upload gestoppt. Bibliothek erneut prüfen.");
                         }
                         if(originalId==0){source.SetReconciliation(job.Channel,true);await SaveAsync();}
                         job.Status=JobStatus.Uploading;job.Message="Wird an Steam übertragen";Status=$"{job.Channel} · {m.Name}: Upload";await SaveAsync();
@@ -616,10 +664,15 @@ public sealed class MainViewModel : ObservableObject, IDisposable
                         if(id>0){source.SetWorkshopId(job.Channel,id);source.SetReconciliation(job.Channel,false);job.PublishedFileId=id;await SaveAsync();}
                         if(result.ExitCode!=0||!result.Published||id==0)throw new IOException("SteamCMD hat den Upload nicht eindeutig bestätigt. Protokoll und Steam-Seite prüfen. Exit-Code: "+result.ExitCode);
                         source.SetFingerprint(job.Channel,snapshot.Fingerprint);source.LastPublishedAt=DateTimeOffset.UtcNow;source.LastPackageBytes=snapshot.Bytes;source.ChangeState="Unverändert";
+                        source.Version=m.Version;
+                        if(writtenFields is null||writtenFields.Contains("title"))source.Name=m.Name;
+                        if(writtenFields is null||writtenFields.Contains("description"))source.Description=m.Description;
+                        source.SetMetadataHashes(job.Channel,writtenFields is null||writtenFields.Contains("changenote")?WorkshopMetadataPlanner.HashText(WorkshopMetadataPlanner.RenderNote(m)):"",
+                            writtenFields is null||writtenFields.Contains("previewfile")?await WorkshopMetadataPlanner.HashFileAsync(m.PreviewFile,token):"");
                         job.Status=JobStatus.Succeeded;job.Message="Steam hat den Upload bestätigt.";LoginStatus="SteamCMD-Anmeldung bestätigt";
                         // Persist the remote ID and verified success before optional local post-processing.
                         await SaveAsync();
-                        job.RemoteVerification=await VerifyAfterUploadAsync(id,account.VerifiedWebSteamId64,app.AppId,token);
+                        job.RemoteVerification=await VerifyAfterUploadAsync(id,account.VerifiedWebSteamId64,app.AppId,source,m,job.Channel,writtenFields,token);
                         job.Message+=" "+job.RemoteVerification;
                         await SaveAsync();
                         if(settings.CreatePackageBackups)try{await Task.Run(()=>_builder.Backup(snapshot,source,job.Channel,settings.BackupRetention),token);}catch(Exception e){job.Message+=" Backup fehlgeschlagen: "+e.Message;}
@@ -640,15 +693,27 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             Status=token.IsCancellationRequested?"Warteschlange angehalten.":"Durchlauf beendet. Ergebnisse im Verlauf prüfen.";
         }finally{_operation?.Dispose();_operation=null;IsBusy=false;Refresh();}
     }
-    private async Task<string> VerifyAfterUploadAsync(ulong id,ulong owner,uint appId,CancellationToken ct)
+    private async Task<string> VerifyAfterUploadAsync(ulong id,ulong owner,uint appId,ModProject source,ModProject uploaded,
+        ReleaseChannel channel,IReadOnlyCollection<string>? fields,CancellationToken ct)
     {
         for(var attempt=0;attempt<3;attempt++) {
             try {
                 if(attempt>0)await Task.Delay(TimeSpan.FromSeconds(2),ct);
-                var remote=new RemoteWorkshopItem{Id=id,OwnerSteamId64=owner};
+                var remote=new RemoteWorkshopItem{Id=id,OwnerSteamId64=owner,FileType=0};
                 await _steam.EnrichWorkshopItemsAsync([remote],ct);
-                if(remote.FieldStatus.GetValueOrDefault("owner")==RemoteFieldStatus.Known&&remote.ConsumerAppId==appId)
-                    return "Steam-Detailabfrage bestätigt ID, Besitzer und AppID.";
+                bool Included(string field)=>fields is null||fields.Contains(field);
+                if(remote.FieldStatus.GetValueOrDefault("owner")==RemoteFieldStatus.Known&&remote.ConsumerAppId==appId&&remote.UpdatedAt is not null&&
+                    (!Included("title")||remote.Title==uploaded.Name+(channel==ReleaseChannel.Test?uploaded.TestTitleSuffix:""))&&
+                    (!Included("description")||WorkshopMetadataPlanner.Normalize(remote.Description)==WorkshopMetadataPlanner.Normalize(uploaded.Description))&&
+                    (!Included("visibility")||remote.Visibility==(channel==ReleaseChannel.Test?2:uploaded.Visibility))) {
+                    remote.LocalModId=source.Id;
+                    var old=Data.RemoteItems.FirstOrDefault(r=>r.Id==id&&r.OwnerSteamId64==owner);
+                    if(old is null)Data.RemoteItems.Add(remote);else Data.RemoteItems[Data.RemoteItems.IndexOf(old)]=remote;
+                    source.OwnerSteamId64=owner;
+                    WorkshopMetadataPlanner.RememberBaseline(source,channel,remote);
+                    if(channel==ReleaseChannel.Live)source.RemoteBaselineUpdatedAt=remote.UpdatedAt;
+                    return "Steam-Detailabfrage bestätigt ID, Besitzer, AppID und übertragene Textfelder; Baseline aktualisiert.";
+                }
             } catch(OperationCanceledException) when(ct.IsCancellationRequested){return "Remote-Nachprüfung abgebrochen; Steam-Seite prüfen.";}
             catch(Exception ex) when(ex is HttpRequestException or IOException or InvalidDataException or TaskCanceledException) {AppendLog("Remote-Nachprüfung: "+ex.Message);}
         }
@@ -729,7 +794,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         if(!await EnsureLoginReadyAsync())return;
         var account=ActiveAccount!;
         IsBusy=true;_operation=new();
-        LoginLog=$"Workshop Studio 1.2.0 · SteamCMD-Anmeldung\n.NET: {Environment.Version} · {Environment.OSVersion}\n";
+        LoginLog=$"Workshop Studio 1.3.0 · SteamCMD-Anmeldung\n.NET: {Environment.Version} · {Environment.OSVersion}\n";
         _lastLoginLogFile=Path.Combine(Store.LogRoot,"login-"+DateTime.Now.ToString("yyyyMMdd-HHmmss-fff")+".log");
         try
         {
@@ -872,6 +937,24 @@ public sealed class MainViewModel : ObservableObject, IDisposable
                     watcher.Error+=(_,e)=>Application.Current.Dispatcher.BeginInvoke(new Action(()=>{_dirty[id]=DateTimeOffset.UtcNow;AppendLog("Dateiüberwachung: "+e.GetException().Message);}));
                     watcher.EnableRaisingEvents=true;_watchers.Add(watcher);
                 }
+                if(Settings.AutoDetectMetadata) {
+                    var metadataRoots=LocalWorkshopSchemaReader.MetadataRoots(plan).ToList();
+                    if(File.Exists(mod.PreviewFile))metadataRoots.Add(Path.GetDirectoryName(Path.GetFullPath(mod.PreviewFile))!);
+                    foreach(var root in metadataRoots.Distinct(StringComparer.OrdinalIgnoreCase)) {
+                        var id=mod.Id;
+                        var metadataWatcher=new FileSystemWatcher(root){IncludeSubdirectories=false,NotifyFilter=NotifyFilters.FileName|NotifyFilters.LastWrite|NotifyFilters.Size};
+                        void MetadataChanged(object? sender,FileSystemEventArgs e) {
+                            var name=Path.GetFileName(e.FullPath);
+                            if(!new[]{"workshop.txt","version.txt","VERSION","CHANGELOG.md","CHANGELOG.txt"}.Contains(name,StringComparer.OrdinalIgnoreCase)&&
+                                !Path.GetFullPath(e.FullPath).Equals(Path.GetFullPath(string.IsNullOrWhiteSpace(mod.PreviewFile)?Path.Combine(root,".no-preview"):mod.PreviewFile),StringComparison.OrdinalIgnoreCase))return;
+                            Application.Current.Dispatcher.BeginInvoke(new Action(()=>_dirty[id]=DateTimeOffset.UtcNow));
+                        }
+                        metadataWatcher.Changed+=MetadataChanged;metadataWatcher.Created+=MetadataChanged;metadataWatcher.Deleted+=MetadataChanged;
+                        metadataWatcher.Renamed+=(s,e)=>{MetadataChanged(s,e);MetadataChanged(s,new FileSystemEventArgs(WatcherChangeTypes.Deleted,Path.GetDirectoryName(e.OldFullPath)!,Path.GetFileName(e.OldFullPath)));};
+                        metadataWatcher.Error+=(_,_)=>Application.Current.Dispatcher.BeginInvoke(new Action(()=>_dirty[id]=DateTimeOffset.UtcNow));
+                        metadataWatcher.EnableRaisingEvents=true;_watchers.Add(metadataWatcher);
+                    }
+                }
             }
             catch(Exception ex){AppendLog("Dateiüberwachung für "+mod.Name+" nicht eingerichtet: "+ex.Message);}
         }
@@ -898,7 +981,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         EnsureIdle();var path=DesktopDialogs.OpenFile("Arbeitsbereich|*.json");if(path is null)return;if(new FileInfo(path).Length>50*1024*1024)throw new InvalidDataException("Arbeitsbereich ist zu groß.");
         var data=JsonSerializer.Deserialize<Workspace>(await File.ReadAllTextAsync(path),WorkspaceStore.JsonOptions)??throw new InvalidDataException("Leere Datei.");
         if(data.SchemaVersion==1)WorkspaceStore.UpgradeSchema1(data);
-        data.Settings.AutomationEnabled=false;data.Settings.AutoLogin=false;data.Settings.CheckToolUpdatesOnStartup=false;WorkspaceStore.Validate(data);
+        data.Settings.AutomationEnabled=false;data.Settings.AutoLogin=false;data.Settings.CheckToolUpdatesOnStartup=false;WorkspaceStore.Validate(data);WorkshopMetadataPlanner.SeedBaselines(data);
         foreach(var j in data.Jobs.Where(j=>j.Status is JobStatus.Preparing or JobStatus.Uploading)){j.Status=JobStatus.Interrupted;j.Message="Importierter Vorgang: nicht automatisch fortgesetzt.";}
         if(!DesktopDialogs.Confirm("Arbeitsbereich ersetzen? Vorher wird der aktuelle Stand gesichert. Importierte Automationen bleiben ausgeschaltet; Pfade und Update-Adressen vor Benutzung prüfen."))return;
         await BackupWorkspaceAsync();Data=data;SettingsDraft=WorkspaceStore.Clone(Settings);Raise(nameof(SettingsDraft));SelectedApp=null;SelectedMod=null;SelectedCollection=null;SelectedAccount=null;SelectedJob=null;ThemeService.Apply(Settings);await SaveAsync();ConfigureAutomation();
@@ -931,7 +1014,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         UpdateApplyService.Start(payload,AppContext.BaseDirectory,release.Version);
         Application.Current.MainWindow.Close();
     }
-    private void ShowDiagnostics()=>new TextViewerWindow("Systemdiagnose",$"Workshop Studio 1.2.0\n.NET: {Environment.Version}\nBetriebssystem: {Environment.OSVersion}\n64-Bit: {Environment.Is64BitProcess}\nArbeitsbereich: {Store.Root}\nSteamCMD vorhanden: {File.Exists(Settings.SteamCmdPath)}\nApps: {AppCount}\nMods: {ModCount}\nCollections: {CollectionCount}\nWorkshop-Einträge: {Data.RemoteItems.Count}\n\nKeine Passwörter oder Sitzungstoken in dieser Ausgabe.\nEchte Veröffentlichungen sind erst nach gezielter Freigabe zu testen."){Owner=DesktopDialogs.Owner}.ShowDialog();
+    private void ShowDiagnostics()=>new TextViewerWindow("Systemdiagnose",$"Workshop Studio 1.3.0\n.NET: {Environment.Version}\nBetriebssystem: {Environment.OSVersion}\n64-Bit: {Environment.Is64BitProcess}\nArbeitsbereich: {Store.Root}\nSteamCMD vorhanden: {File.Exists(Settings.SteamCmdPath)}\nApps: {AppCount}\nMods: {ModCount}\nCollections: {CollectionCount}\nWorkshop-Einträge: {Data.RemoteItems.Count}\n\nKeine Passwörter oder Sitzungstoken in dieser Ausgabe.\nEchte Veröffentlichungen sind erst nach gezielter Freigabe zu testen."){Owner=DesktopDialogs.Owner}.ShowDialog();
     public async Task SaveOnExitAsync(){await Store.SaveAsync(Data);}
     public void Dispose(){_sessionPasswords.Clear();_timer.Stop();_operation?.Cancel();foreach(var w in _watchers)w.Dispose();_steam.Dispose();}
 }

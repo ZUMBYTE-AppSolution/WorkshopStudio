@@ -138,7 +138,7 @@ public sealed class SteamService : IDisposable
             item.FieldStatus["changelog"] = RemoteFieldStatus.NotRequested;
         }
     }
-    public static (string Text, int Count) ParseChangeNotes(string html)
+    public static (string Text, int Count,IReadOnlyList<string> Notes) ParseChangeNotes(string html)
     {
         if (html.Length > 4_000_000) throw new InvalidDataException("Steam-Änderungsverlauf ist zu groß.");
         var matches = Regex.Matches(html,
@@ -148,9 +148,9 @@ public sealed class SteamService : IDisposable
             Regex.Replace(value, @"<br\s*/?>", "\n", RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(200)),
             "<[^>]+>", "", RegexOptions.Singleline, TimeSpan.FromMilliseconds(200))).Trim();
         var lines = matches.Cast<Match>().Take(50).Select(m => Plain(m.Groups["date"].Value) + "\n" + Plain(m.Groups["note"].Value));
-        return (string.Join("\n\n", lines), matches.Count);
+        return (string.Join("\n\n", lines), matches.Count,matches.Cast<Match>().Take(50).Select(m=>Plain(m.Groups["note"].Value)).ToArray());
     }
-    public async Task<(string Text, string Status)> GetChangeNotesAsync(ulong id, CancellationToken ct)
+    public async Task<(string Text, string Status,IReadOnlyList<string> Notes)> GetChangeNotesAsync(ulong id, CancellationToken ct)
     {
         if (id == 0) throw new ArgumentOutOfRangeException(nameof(id));
         using var response = await _http.GetAsync($"https://steamcommunity.com/sharedfiles/filedetails/changelog/{id}?l=english", ct);
@@ -160,7 +160,7 @@ public sealed class SteamService : IDisposable
         var html = await response.Content.ReadAsStringAsync(ct);
         var parsed = ParseChangeNotes(html);
         return (parsed.Text, parsed.Count == 0 ? "Keine öffentlich sichtbaren Änderungsnotizen gefunden" :
-            $"{parsed.Count} öffentlich sichtbare Notizen (erste Seite; vollständiger Verlauf auf Steam)");
+            $"{parsed.Count} öffentlich sichtbare Notizen (erste Seite; vollständiger Verlauf auf Steam)",parsed.Notes);
     }
     public async Task<List<ulong>> GetCollectionAsync(ulong id, CancellationToken ct)
     {

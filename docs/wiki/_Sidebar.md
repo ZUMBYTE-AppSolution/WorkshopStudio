@@ -1,0 +1,20 @@
+**🧰 Workshop Studio 1.3.0**
+
+- [🏠 Handbuch – Start](Home)
+- [🚀 Schnellstart](Schnellstart)
+- [📦 Installation und Updates](Installation-und-Updates)
+- [🔑 Steam und Konten](Steam-und-Konten)
+- [☁️ Workshop-Bibliothek](Workshop-Bibliothek)
+- [📂 Lokale Mods und Ordner](Lokale-Mods)
+- [📝 Metadaten und Changelog](Metadaten-und-Changelog)
+- [⬆️ Veröffentlichen](Veroeffentlichen)
+- [💾 Backups und Wiederherstellung](Backups-und-Wiederherstellung)
+- [⚙️ Automatisierung](Automatisierung)
+- [🗂️ Collections](Collections)
+- [📋 Config und Befehle](Config-und-Befehle)
+- [🧪 Kopierbare Beispiele](Beispiele)
+- [🎛️ Einstellungen und Daten](Einstellungen-und-Daten)
+- [🛠️ Fehlerbehebung](Fehlerbehebung)
+- [✅ Entwicklung und Prüfstatus](Entwicklung-und-Pruefstatus)
+
+[Downloads](https://github.com/ZUMBYTE-AppSolution/WorkshopStudio/releases/latest) · [Änderungen](https://github.com/ZUMBYTE-AppSolution/WorkshopStudio/blob/main/CHANGELOG.md)

@@ -7,6 +7,7 @@
           <TextBlock Text="1. SteamCMD installieren. 2. Steam-Konto hinzufügen und anmelden. 3. AppID und Mod anlegen. 4. Paket prüfen. 5. Test-Upload einreihen und Warteschlange starten. 6. Steam-Eintrag prüfen; erst danach Live verwenden." Style="{StaticResource Muted}" Margin="0,7,0,16"/>
           <WrapPanel Margin="0,0,0,12">
             <Button Content="Dokumentation öffnen" Command="{Binding ActionCommand}" CommandParameter="help-docs" Margin="0,0,8,8" Style="{StaticResource PrimaryButton}" icons:Iconify.Icon="{StaticResource IconExternal}"/>
+            <Button Content="GitHub-Wiki" Command="{Binding ActionCommand}" CommandParameter="help-wiki" Margin="0,0,8,8" icons:Iconify.Icon="{StaticResource IconExternal}"/>
             <Button Content="Systemdiagnose" Command="{Binding ActionCommand}" CommandParameter="diagnostics" Margin="0,0,8,8" icons:Iconify.Icon="{StaticResource IconScan}"/>
             <Button Content="Workshop-Vereinbarung" Command="{Binding ActionCommand}" CommandParameter="workshop-terms" Margin="0,0,8,8" icons:Iconify.Icon="{StaticResource IconExternal}"/>
           </WrapPanel>

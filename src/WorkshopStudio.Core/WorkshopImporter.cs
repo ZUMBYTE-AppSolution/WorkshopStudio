@@ -19,7 +19,7 @@ public static class WorkshopImporter
             else if(incoming.FieldStatus.GetValueOrDefault("owner")==RemoteFieldStatus.Known) {
                 incoming.LocalModId=old.LocalModId;
                 if(incoming.PreviewUrl==old.PreviewUrl)incoming.PreviewCachePath=old.PreviewCachePath;
-                if(incoming.UpdatedAt==old.UpdatedAt){incoming.RemoteChangelog=old.RemoteChangelog;incoming.RemoteChangelogStatus=old.RemoteChangelogStatus;}
+                if(incoming.UpdatedAt==old.UpdatedAt){incoming.RemoteChangelog=old.RemoteChangelog;incoming.RemoteChangelogStatus=old.RemoteChangelogStatus;incoming.RemoteChangeNotes=old.RemoteChangeNotes;}
                 workspace.RemoteItems[workspace.RemoteItems.IndexOf(old)]=incoming;
             }
             if(incoming.FieldStatus.GetValueOrDefault("owner")!=RemoteFieldStatus.Known){readOnly++;continue;}
@@ -46,6 +46,8 @@ public static class WorkshopImporter
                         ContentFolder="",AutoPublish=false};
                     workspace.Mods.Add(existing);addedMods++;
                 }
+                else if(existing.WorkshopId==incoming.Id)existing.RemoteBaselineUpdatedAt=incoming.UpdatedAt;
+                WorkshopMetadataPlanner.RememberBaseline(existing,existing.WorkshopId==incoming.Id?ReleaseChannel.Live:ReleaseChannel.Test,incoming,true);
                 var remote=workspace.RemoteItems.First(i=>i.Id==incoming.Id&&i.OwnerSteamId64==uploadSteamId);
                 remote.LocalModId=existing.Id;
             } else readOnly++;

@@ -1,0 +1,5 @@
+title=RP Events
+description=Zusätzliche RP-Ereignisse für unseren Server.
+description=
+description=Version: 2.1.0
+description=Neu: Begrüßung und einstellbare Ereignisanzahl.

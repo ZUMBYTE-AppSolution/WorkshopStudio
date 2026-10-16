@@ -1,5 +1,11 @@
 # Einstellungen und Datenfelder
 
+## Neu ab 1.3.0
+
+**AutoDetectMetadata** ist standardmäßig an. Lokale Beschreibung, Titel, Version und aktuelle Changelog-Sektion werden vor Prüfung/Upload berücksichtigt. Der Updateplan wählt abweichende sichere Felder vor; erlaubte automatische Jobs übernehmen diese Entscheidung. Fehlende Angaben löschen nichts. **SynchronizeVisibility** ist pro Mod standardmäßig aus und erlaubt automatische Live-Sichtbarkeitsänderungen erst nach eigener Auswahl.
+
+Die Sicherung des bisherigen Steam-Inhalts vor jedem Bestandsupdate ist verpflichtend. Sie wird unter `backups/workshop-items/<ID>/<Kanal>` mit Manifest und SHA-256 gespeichert und nutzt die bestehende Aufbewahrungsgrenze. **CreatePackageBackups** steuert weiterhin ausschließlich das zusätzliche Backup des neu hochgeladenen Pakets nach Erfolg. In der Jobhistorie werden Metadatenentscheidung und Vorab-Backup-Pfad gespeichert. [Vollständige Anleitung](https://github.com/ZUMBYTE-AppSolution/WorkshopStudio/wiki)
+
 ## Allgemein
 
 - Theme: Dark/Light. Akzent: `#RRGGBB`. UI-Skalierung: 0,8 bis 1,5 zusätzlich zur Windows-DPI-Skalierung; bei hoher Skalierung ausreichend großes Fenster nutzen. Start maximiert.

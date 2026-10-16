@@ -22,35 +22,46 @@ public static class LocalWorkshopSchemaReader
 
     private static string ReadValue(string text, string key)
     {
-        var hit = Regex.Match(text, @"(?im)^\s*" + Regex.Escape(key) + @"\s*=\s*(?<value>[^\r\n]+)",
+        var hit = Regex.Match(text, @"(?im)^[ \t]*" + Regex.Escape(key) + @"[ \t]*=[ \t]*(?<value>[^\r\n]+)",
             RegexOptions.None, TimeSpan.FromMilliseconds(200));
         return hit.Success ? hit.Groups["value"].Value.Trim() : "";
     }
 
-    public static LocalWorkshopSchema Inspect(AppProfile app, ModProject mod)
+    public static IReadOnlyList<string> MetadataRoots(PackagePlan plan)
     {
-        var plan = ModSourceResolver.Resolve(app, mod);
-        var evidence = new List<string>(); var warnings = new List<string>();
-        string title = "", description = "", version = "", preview = "", changelog = "";
         // The wrapper is used for metadata only. Packaging still uses plan.Sources exclusively.
         var roots = plan.Sources.Select(s => s.SourceRoot).ToList();
         roots.Add(plan.RequestedPath);
-        if (plan.IsZomboid && plan.Sources.Count == 1) {
+        if (plan.IsZomboid && plan.Sources.Select(s=>Directory.GetParent(s.SourceRoot)?.FullName).Distinct(StringComparer.OrdinalIgnoreCase).Count()==1) {
             var parent = Directory.GetParent(plan.Sources[0].SourceRoot)?.FullName;
             if (parent is not null && (Path.GetFileName(parent).Equals("mods", StringComparison.OrdinalIgnoreCase) ||
                 Path.GetFileName(parent).Equals("Contents", StringComparison.OrdinalIgnoreCase))) {
                 var wrapper = Directory.GetParent(parent)?.FullName;
                 if (wrapper is not null && PackageBuilder.IsWithin(plan.Sources[0].SourceRoot, wrapper) &&
                     Directory.Exists(wrapper) && (File.GetAttributes(wrapper) & FileAttributes.ReparsePoint) == 0)
-                    roots.Add(wrapper);
+                {
+                    try {ModSourceResolver.EnsureNotGameDirectory(wrapper);roots.Add(wrapper);}catch(InvalidDataException){}
+                    if(new[]{"Contents","Content"}.Contains(Path.GetFileName(wrapper),StringComparer.OrdinalIgnoreCase)&&Directory.GetParent(wrapper) is { } project) {
+                        try {ModSourceResolver.EnsureNotGameDirectory(project.FullName);if((project.Attributes&FileAttributes.ReparsePoint)==0)roots.Add(project.FullName);}catch(InvalidDataException){}
+                    }
+                }
             }
         }
+        return roots.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+    }
+    public static LocalWorkshopSchema Inspect(AppProfile app, ModProject mod)
+    {
+        var plan=ModSourceResolver.Resolve(app,mod);
+        var evidence=new List<string>();var warnings=new List<string>();
+        string title="",description="",version="",preview="",changelog="";
+        var roots=MetadataRoots(plan);
         foreach (var root in roots.Distinct(StringComparer.OrdinalIgnoreCase)) {
             var infoPath = Path.Combine(root, "workshop.txt");
             var raw = ReadSmall(infoPath, 256 * 1024);
             if (raw.Length > 0) {
                 title = title.Length == 0 ? ReadValue(raw, "title") : title;
-                description = description.Length == 0 ? ReadValue(raw, "description") : description;
+                if(description.Length==0)description=string.Join("\n",Regex.Matches(raw,@"(?im)^[ \t]*description[ \t]*=[ \t]*(?<value>[^\r\n]*)",RegexOptions.None,TimeSpan.FromMilliseconds(200))
+                    .Select(m=>m.Groups["value"].Value)).Trim();
                 evidence.Add(infoPath + " (Titel/Beschreibung, falls vorhanden)");
             }
             foreach (var name in new[] { "version.txt", "VERSION", "VERSION.txt" }) {

@@ -131,7 +131,7 @@ public partial class App:Application
     {
         var source=Path.Combine(output,"sample-mod");Directory.CreateDirectory(source);
         File.WriteAllText(Path.Combine(source,"mod.info"),"id=ui-smoke\nname=UI Smoke\nversion=1.2\n");
-        File.WriteAllText(Path.Combine(source,"config.ini"),"[Server]\nGreeting=Grüße aus Workshop Studio\n");
+        File.WriteAllText(Path.Combine(source,"config.ini"),"[Server]\n; Beispielwerte für das Wiki\nGreeting=Grüße aus Workshop Studio\nEnableWelcome=true\nMaxEvents=8\n");
         var workspace=new Workspace();workspace.Settings.RefreshMetadataOnStartup=false;
         workspace.Settings.CheckToolUpdatesOnStartup=false;workspace.Settings.AutoLogin=false;
         var app=workspace.Apps[0];app.Name="Project Zomboid";
@@ -151,6 +151,12 @@ public partial class App:Application
             for(var i=0;i<40&&vm.IsBusy;i++)await Task.Delay(100);
             await Task.Delay(300);
             Capture(window,Path.Combine(output,"dashboard-1280x800.png"),1280,800);
+            vm.CurrentPage="mods";await Dispatcher.InvokeAsync(()=>{},System.Windows.Threading.DispatcherPriority.Render);window.UpdateLayout();
+            CaptureElement(FindChild<ModsView>(window)!.LocalModActions,Path.Combine(output,"mods-actions.png"));
+            vm.CurrentPage="history";await Dispatcher.InvokeAsync(()=>{},System.Windows.Threading.DispatcherPriority.Render);window.UpdateLayout();
+            CaptureElement(FindChild<HistoryView>(window)!.HistoryActions,Path.Combine(output,"backup-actions.png"));
+            vm.CurrentPage="automation";await Dispatcher.InvokeAsync(()=>{},System.Windows.Threading.DispatcherPriority.Render);window.UpdateLayout();
+            CaptureRegion(window,new Rect(260,160,975,330),Path.Combine(output,"automation-settings.png"));
             vm.CurrentPage="library";vm.SelectedRemoteItem=vm.Data.RemoteItems.Single();
             await Dispatcher.InvokeAsync(()=>{},System.Windows.Threading.DispatcherPriority.Render);
             Capture(window,Path.Combine(output,"library-1920x1080.png"),1920,1080);
@@ -183,18 +189,39 @@ public partial class App:Application
             var matching=new LocalModMatchWindow(app,catalog,suggestions,vm.Data.Mods){Owner=window};matching.Show();
             await Dispatcher.InvokeAsync(()=>{},System.Windows.Threading.DispatcherPriority.Render);
             Capture(matching,Path.Combine(output,"local-mod-matching-980x740.png"),980,740);
+            CaptureRegion(matching,new Rect(615,180,315,285),Path.Combine(output,"local-mod-targets.png"));
             matching.Close();
             var configs=await ConfigDiscovery.FindAsync(app,mod,512,CancellationToken.None);
             var config=new ConfigWindow(mod.Name,configs){Owner=window};config.Show();
             await Dispatcher.InvokeAsync(()=>{},System.Windows.Threading.DispatcherPriority.Render);
             Capture(config,Path.Combine(output,"config-1040x760.png"),1040,760);
-            config.RawText.Select(0,8);
+            config.Tabs.SelectedIndex=1;await Dispatcher.InvokeAsync(()=>{},System.Windows.Threading.DispatcherPriority.Render);config.UpdateLayout();
+            CaptureCurrent(config,Path.Combine(output,"config-options.png"));config.Tabs.SelectedIndex=0;
+            await Dispatcher.InvokeAsync(()=>{},System.Windows.Threading.DispatcherPriority.Render);
+            config.RawText.Focus();config.RawText.Select(0,8);
+            if(config.RawText.SelectedText!="[Server]")throw new InvalidDataException("Config-Test konnte Originaltext nicht markieren: "+config.RawText.SelectionLength);
             config.CopySelectionButton.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
-            var copied=Clipboard.GetText();
-            if(copied!="[Server]")throw new InvalidDataException("Config-Auswahl wurde nicht originalgetreu in die Zwischenablage kopiert.");
+            // The copy service reads the real Windows clipboard back and verifies the selected text before completing.
+            await config.LastCopyTask;
             config.Close();
+            var proposed=WorkspaceStore.Clone(mod);proposed.Description="Neue lokale Beschreibung";proposed.ChangeNote="Neue Release-Notiz";
+            var builder=new PackageBuilder(vm.Store);
+            var package=await builder.BuildAsync(app,proposed,ReleaseChannel.Live,vm.Settings,Guid.NewGuid(),null,CancellationToken.None);
+            var automatic=WorkshopMetadataPlanner.Compare(proposed,ReleaseChannel.Live,vm.Data.RemoteItems.Single(),"","",true);
+            var update=new UpdatePlanWindow(vm.Data.Accounts.Single(),app,proposed,ReleaseChannel.Live,vm.Data.RemoteItems.Single(),package,automatic){Owner=window};
+            update.Show();await Dispatcher.InvokeAsync(()=>{},System.Windows.Threading.DispatcherPriority.Render);
+            if(!update.SelectedFields.Contains("description")||!update.SelectedFields.Contains("changenote"))throw new InvalidDataException("Geänderte Metadaten wurden im Update-Plan nicht automatisch vorausgewählt.");
+            Capture(update,Path.Combine(output,"automatic-update-plan.png"),820,680);
+            CaptureElement((FrameworkElement)((FrameworkElement)update.AutomaticText.Parent).Parent,Path.Combine(output,"metadata-decisions.png"));
+            var metadataScroll=FindChild<System.Windows.Controls.ScrollViewer>(update)!;
+            var titlePosition=update.TitleBox.TranslatePoint(new Point(0,0),metadataScroll);
+            metadataScroll.ScrollToVerticalOffset(metadataScroll.VerticalOffset+titlePosition.Y-12);
+            await Dispatcher.InvokeAsync(()=>{},System.Windows.Threading.DispatcherPriority.Render);update.UpdateLayout();
+            var selectionArea=metadataScroll.TransformToAncestor(update).TransformBounds(new Rect(0,0,metadataScroll.ActualWidth,metadataScroll.ActualHeight));
+            selectionArea.Y+=14;selectionArea.Height-=14;CaptureRegion(update,selectionArea,Path.Combine(output,"metadata-selection.png"));
+            update.Close();builder.DeleteOwnedStage(package.Root);
             await File.WriteAllTextAsync(Path.Combine(output,"ui-smoke-result.txt"),
-                "PASS: Dashboard mit zwei kompakten Spielzeilen und Bibliothek als echte WPF-Fenster gerendert; Iconify-Fensterknöpfe auch maximiert im Monitorbereich geprüft; zwei lokale Einzelmods in Unterordnern erkannt und Zuordnungsfenster gerendert; Config-Fenster gerendert; markierter Originaltext kopiert.\n");
+                "PASS: Dashboard und Bibliothek als echte WPF-Fenster gerendert; Iconify-Fensterknöpfe auch maximiert geprüft; lokale Mod-Zuordnung gerendert; Config-Originaltext kopiert; automatische Vorauswahl geänderter Beschreibung und Änderungsnotiz im Update-Plan geprüft. Kein Upload.\n");
             await vm.SaveOnExitAsync();vm.Dispose();Shutdown(0);
         } catch(Exception ex) {
             await File.WriteAllTextAsync(Path.Combine(output,"ui-smoke-result.txt"),"FAIL: "+ex+"\n");
@@ -215,6 +242,25 @@ public partial class App:Application
         bitmap.Render(visual);
         var png=new PngBitmapEncoder();png.Frames.Add(BitmapFrame.Create(bitmap));
         using var file=File.Create(path);png.Save(file);
+    }
+    private static T? FindChild<T>(DependencyObject root) where T:DependencyObject
+    {
+        if(root is T match)return match;
+        for(var i=0;i<VisualTreeHelper.GetChildrenCount(root);i++)if(FindChild<T>(VisualTreeHelper.GetChild(root,i)) is { } child)return child;
+        return null;
+    }
+    private static void CaptureElement(FrameworkElement element,string path)
+    {
+        var window=Window.GetWindow(element)??throw new InvalidOperationException("Screenshot-Element besitzt kein Fenster.");
+        var area=element.TransformToAncestor(window).TransformBounds(new Rect(0,0,element.ActualWidth,element.ActualHeight));
+        CaptureRegion(window,area,path);
+    }
+    private static void CaptureRegion(Visual visual,Rect area,string path)
+    {
+        var drawing=new DrawingVisual();using(var context=drawing.RenderOpen())context.DrawRectangle(
+            new VisualBrush(visual){Viewbox=area,ViewboxUnits=BrushMappingMode.Absolute,Stretch=Stretch.Fill},null,new Rect(0,0,area.Width,area.Height));
+        var bitmap=new RenderTargetBitmap((int)Math.Ceiling(area.Width),(int)Math.Ceiling(area.Height),96,96,PixelFormats.Pbgra32);bitmap.Render(drawing);
+        var png=new PngBitmapEncoder();png.Frames.Add(BitmapFrame.Create(bitmap));using var file=File.Create(path);png.Save(file);
     }
     protected override void OnExit(ExitEventArgs e){if(_ownsMutex)_mutex?.ReleaseMutex();_mutex?.Dispose();base.OnExit(e);}
 }

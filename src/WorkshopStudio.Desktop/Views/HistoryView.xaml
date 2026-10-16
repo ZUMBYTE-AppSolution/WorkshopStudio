@@ -5,8 +5,9 @@
       <RowDefinition Height="Auto"/>
       <RowDefinition Height="*"/>
     </Grid.RowDefinitions>
-    <WrapPanel Margin="0,0,0,12">
+    <WrapPanel x:Name="HistoryActions" Margin="0,0,0,12">
       <Button Content="Protokoll öffnen" Command="{Binding ActionCommand}" CommandParameter="open-log" Margin="0,0,8,8" Style="{StaticResource PrimaryButton}" icons:Iconify.Icon="{StaticResource IconExternal}"/>
+      <Button Content="Sicherung vor Update" Command="{Binding ActionCommand}" CommandParameter="open-job-backup" Margin="0,0,8,8" icons:Iconify.Icon="{StaticResource IconFolder}"/>
       <Button Content="Erneut einreihen" Command="{Binding ActionCommand}" CommandParameter="retry-job" Margin="0,0,8,8" icons:Iconify.Icon="{StaticResource IconUpload}"/>
       <Button Content="Verlauf leeren" Command="{Binding ActionCommand}" CommandParameter="clear-history" Margin="0,0,8,8" icons:Iconify.Icon="{StaticResource IconDelete}"/>
       <Button Content="Paket-Backups" Command="{Binding ActionCommand}" CommandParameter="open-backups" Margin="0,0,8,8" icons:Iconify.Icon="{StaticResource IconFolder}"/>

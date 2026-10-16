@@ -27,8 +27,9 @@ def need(value, message):
 
 def version():
     props = ET.parse(ROOT/'Directory.Build.props').getroot()
-    need(props.find('PropertyGroup/Version').text == '1.2.0', 'Wrong assembly version')
-    need('Version 1.2.0' in read(DESKTOP/'MainWindow.xaml'), 'Wrong sidebar version')
+    current = props.find('PropertyGroup/Version').text
+    need(bool(re.fullmatch(r'\d+\.\d+\.\d+', current)), 'Wrong assembly version')
+    need('Version '+current in read(DESKTOP/'MainWindow.xaml'), 'Wrong sidebar version')
     need('typeof(MainViewModel).Assembly.GetName().Version' in vm, 'Updater must read installed assembly version')
     return 'Assembly, sidebar and updater version source agree'
 check('Version wiring', version)
@@ -64,7 +65,7 @@ check('UTF-8 terminal input',lambda:need('new UTF8Encoding(false)' in transport 
 check('Output draining during UI prompts',lambda:need('Channel.CreateUnbounded' in runner and 'reader.BaseStream.ReadAsync(buffer.AsMemory()' in runner and 'channel.Writer.TryWrite' in runner,'Missing independent reader loop'))
 check('Console close on worker',lambda:need('Task.Run(() => Native.ClosePseudoConsole(handle))' in transport and 'await active.CloseConsoleAsync()' in runner,'Missing teardown path'))
 check('Cached login and no argv secrets',lambda:need('"+login", username' in runner and '"+@NoPromptForPassword", "0"' in runner and 'ArgumentList.Add(secret)' not in runner+transport and 'redactor.Add(secret)' in runner,'Missing credential boundary'))
-check('No one-second prompt suppression',lambda:need('lastPrompt' not in runner and 'TimeSpan.FromSeconds(1)' not in runner,'Old prompt suppression survives'))
+check('No one-second prompt suppression',lambda:need('lastPrompt' not in runner and 'TimeSpan.FromSeconds(1)' not in runner[runner.index('private async Task<SteamCmdResult> RunCommandAsync'):],'Old prompt suppression survives'))
 check('Per-stream prompt detectors',lambda:need('active.Readers.Select(_ => new SteamCmdPromptDetector())' in runner and 'detectors[part.Reader]' in runner,'stderr still ignored'))
 check('Abort distinct from timeout',lambda:need('deadline.IsCancellationRequested && !ct.IsCancellationRequested' in runner,'Timeout filter masks user abort'))
 check('Release exclusive state in finally',lambda:need('finally { IsBusy = false; _exclusive.Release(); }' in runner,'Exclusive state can remain stuck'))

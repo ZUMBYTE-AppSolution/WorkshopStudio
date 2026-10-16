@@ -31,6 +31,7 @@ public sealed class WorkspaceStore
             UpgradeSchema1(workspace);
         }
         Validate(workspace);
+        WorkshopMetadataPlanner.SeedBaselines(workspace);
         // Migrate only the former stock accent; user-selected custom colors remain unchanged.
         if(workspace.Settings.Accent.Equals("#FF944D",StringComparison.OrdinalIgnoreCase))workspace.Settings.Accent="#FF781F";
         foreach (var job in workspace.Jobs.Where(j => j.Status is JobStatus.Preparing or JobStatus.Uploading)) {

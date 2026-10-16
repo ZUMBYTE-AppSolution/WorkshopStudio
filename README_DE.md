@@ -1,5 +1,7 @@
 # Workshop Studio
-## Steam-Workshop-Publisher für Windows · Version 1.2.0
+## Steam-Workshop-Publisher für Windows · Version 1.3.0
+
+**Neu in 1.3.0:** Geänderte lokale Metadaten werden automatisch erkannt und für freigegebene Uploads ausgewählt. Vor jedem Bestandsupdate entsteht eine geprüfte Sicherung des bisherigen Steam-Inhalts samt Metadaten und Vorschaubild; ein Backupfehler stoppt den Upload. [Vollständiges Wiki](https://github.com/ZUMBYTE-AppSolution/WorkshopStudio/wiki) · [Metadaten](https://github.com/ZUMBYTE-AppSolution/WorkshopStudio/wiki/Metadaten-und-Changelog) · [Backups und Wiederherstellung](https://github.com/ZUMBYTE-AppSolution/WorkshopStudio/wiki/Backups-und-Wiederherstellung)
 
 
 **Lokale Mods 1.1.1:** Unter **Mods & Resources → Mehrere Mods auswählen** einen Stammordner angeben. Studio durchsucht begrenzt dessen Unterordner nach einzelnen B41-/B42-Mods, schlägt eindeutige Zuordnungen anhand technischer Mod-ID oder Namen vor und zeigt jedes Zielprofil mit seiner Workshop-ID. In der Vorschau lassen sich Treffer bestätigen, unklare Mods überspringen oder als neue lokale Profile ohne Workshop-ID anlegen. Erst beim Übernehmen werden die Quellpfade gesichert; Auto-Publish ist für diese Profile aus. Die frühere gemeinsame Paketauswahl bleibt im Mod-Editor als **Mehrmod-Paket zusammenstellen** erhalten.
@@ -16,9 +18,9 @@
 
 C# / .NET 10 / WPF. Ein gemeinsamer Arbeitsplatz für mehrere Steam-AppIDs, eigene Mods, Collections und kontrollierte Workshop-Veröffentlichungen. Der Ausgangspunkt ist Alfreds Project-Zomboid-RP-Projekt; die App-Verwaltung ist nicht auf Zomboid beschränkt.
 
-**Lieferstatus:** Unter Windows mit .NET SDK 10 gebaut, 131 C#-Selbsttests bestanden und die WPF-Oberfläche samt neuer Zuordnungsvorschau mit isoliertem Testarbeitsbereich gerendert. Die vorhandene Steam-Websitzung und SteamCMD-Sitzung wurden lesend auf dieselbe SteamID64 geprüft. 28 eigene Workshop-Einträge wurden gefunden; 27 konnten über öffentliche Details bestätigt und 19 Mods sowie 8 Collections lokal importiert werden. Ein Eintrag bleibt mangels öffentlicher Detaildaten nur lesbar. Es wurde **kein Steam-Upload** ausgeführt. Weitere Abnahmen stehen in [Bekannte Grenzen](docs/KNOWN_LIMITATIONS.md).
+**Lieferstatus:** Unter Windows mit .NET SDK 10 gebaut, 162 C#-Selbsttests bestanden und die WPF-Oberfläche samt neuer Zuordnungsvorschau mit isoliertem Testarbeitsbereich gerendert. Die vorhandene Steam-Websitzung und SteamCMD-Sitzung wurden lesend auf dieselbe SteamID64 geprüft. 28 eigene Workshop-Einträge wurden gefunden; 27 konnten über öffentliche Details bestätigt und 19 Mods sowie 8 Collections lokal importiert werden. Ein Eintrag bleibt mangels öffentlicher Detaildaten nur lesbar. Es wurde **kein Steam-Upload** ausgeführt. Weitere Abnahmen stehen in [Bekannte Grenzen](docs/KNOWN_LIMITATIONS.md).
 
-Prüfprotokoll und offene Punkte: [Lieferbericht 1.2.0](docs/DELIVERY_1.2.0.md).
+Prüfprotokoll und offene Punkte: [Lieferbericht 1.3.0](docs/DELIVERY_1.3.0.md).
 
 ## Öffnen und bauen
 

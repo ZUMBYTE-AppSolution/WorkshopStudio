@@ -6,7 +6,7 @@
       <RowDefinition Height="*"/>
       <RowDefinition Height="Auto"/>
     </Grid.RowDefinitions>
-    <WrapPanel Margin="0,0,0,12">
+    <WrapPanel x:Name="LocalModActions" Margin="0,0,0,12">
       <Button Content="Mod hinzufügen" Command="{Binding ActionCommand}" CommandParameter="new-mod" Margin="0,0,8,8" Style="{StaticResource PrimaryButton}" icons:Iconify.Icon="{StaticResource IconAdd}"/>
       <Button Content="Mehrere Mods auswählen" Command="{Binding ActionCommand}" CommandParameter="match-local-mods" Margin="0,0,8,8" icons:Iconify.Icon="{StaticResource IconCollection}"/>
       <Button Content="Bearbeiten" Command="{Binding ActionCommand}" CommandParameter="edit-mod" Margin="0,0,8,8" icons:Iconify.Icon="{StaticResource IconEdit}"/>

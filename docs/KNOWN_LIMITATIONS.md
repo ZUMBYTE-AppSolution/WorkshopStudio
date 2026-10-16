@@ -1,5 +1,9 @@
 # Bekannte Grenzen und noch erforderliche Abnahme
 
+## Stand der Prüfung für 1.3.0
+
+Windows-Build, 162 Selbsttests und WPF-Updateplan geprüft. Ein eigener Steam-Eintrag wurde mit passender Kontoidentität lesend heruntergeladen; 13 Inhaltsdateien und Metadaten/Vorschaubild wurden gesichert und erneut auf SHA-256 geprüft. Steam-Zeitstand und Nutzer-Workspace blieben unverändert. Bestandsupdates benötigen ab jetzt dieses geprüfte Backup. Scheitern Spielrechte, Download, Bildabruf oder Archivierung, stoppt der Upload. Die öffentliche Changelog-Sicherung umfasst die erste erreichbare Seite; historische Steam-Notizen sind nicht rücksetzbar. Ein echter Upload mit automatischen Metadaten sowie der Wiederherstellungs-Upload bleiben offen. Weitere Abnahmen stehen in [Lieferbericht 1.3.0](DELIVERY_1.3.0.md).
+
 ## Stand der Prüfung für 1.2.0
 
 131/131 C#-Selbsttests und ein lokaler WPF-Renderingtest bestanden. Die Dashboard-Spiele sind als kompakte Listeneinträge mit proportional skaliertem Bild links und Informationen rechts sichtbar; bei ausreichender Breite stehen zwei nebeneinander. Im maximierten Fenster wurden alle drei eigenen Fensterknöpfe innerhalb des nutzbaren Monitorbereichs geprüft. Der Updater wurde mit gültigen und manipulierten Release-Metadaten, SHA-256-Zuordnung und sicheren ZIP-Pfaden offline getestet. Ein End-to-End-Update von einer älteren installierten Version auf ein neueres öffentliches Release kann erst nach einem nachfolgenden Release geprüft werden. Das Tool-Paket ist portabel und nicht signiert; für geschützte Installationsordner sind Schreibrechte nötig. Der Nutzerordner für echte lokale Mods und ein echter Steam-Upload bleiben offen.

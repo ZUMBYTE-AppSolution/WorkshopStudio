@@ -1,5 +1,13 @@
 # Lokale Abnahme unter Windows
 
+## Metadaten und Vorab-Backups 1.3.0
+
+Automatische Vorauswahl geänderter Beschreibung/Release-Notiz im WPF-Updateplan prüfen. Derselbe Changelog darf je Kanal nur einmal erscheinen; bloße Teiltexte einer alten Notiz zählen nicht als identische Notiz. Leere Angaben erhalten Steam-Werte. Unveränderte importierte Werte und eigene Editoränderungen werden gegen die akzeptierte Baseline unterschieden. Recompressierte Steam-Bilddaten dürfen keine endlose erneute Übertragung desselben lokalen Bildes auslösen.
+
+Vor Bestandsuploads müssen Downloadbestätigung, Konto, AppID, exakter Item-Pfad, Archivmanifest und Datei-SHA-256 erfolgreich geprüft sein. Größenfehler, beschädigte Archive und fehlende bisherige Vorschaubilder stoppen vor dem Upload. Nach Backup Remote-Zeitstand erneut prüfen. Lesender Live-Test an einem eigenen Eintrag wurde ausgeführt; ein echter Update-/Rücksetz-Upload bleibt eine gesonderte gezielte Abnahme.
+
+Die Wiki-Quellen, Bildverweise und Beispielziele werden mit `python scripts/Check-Wiki.py` geprüft. Screenshots stammen aus dem isolierten WPF-Test, nicht aus privaten Nutzerdaten.
+
 Status bei Lieferung 1.2.0: **teilweise erledigt**. Windows-Build, 131 Selbsttests, WPF-Rendering von Dashboard/Bibliothek/Config und neuer Ordnerzuordnung, Iconify-Fenstertasten für Minimieren/Maximieren/Wiederherstellen samt rotem Schließen, Config-Zwischenablage und lesender Web-/SteamCMD-Kontoabgleich wurden ausgeführt. Die Zuordnung eines tatsächlichen lokalen Nutzerordners, ein Update über zwei öffentliche Versionen, echte Steam-Veröffentlichung und Spielabnahme bleiben offen.
 
 ## Dashboard und GitHub-Updater 1.2.0
